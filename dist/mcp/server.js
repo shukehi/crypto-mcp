@@ -8,7 +8,7 @@ export async function toolsList() {
         {
             name: 'get_ohlcv',
             description: 'Fetch OHLCV (K-lines) from Binance spot or futures',
-            input_schema: {
+            inputSchema: {
                 type: 'object',
                 properties: {
                     market: { type: 'string', enum: ['spot', 'futures'], default: 'futures' },
@@ -22,7 +22,7 @@ export async function toolsList() {
         {
             name: 'get_mark_price',
             description: 'Fetch mark price (futures)',
-            input_schema: {
+            inputSchema: {
                 type: 'object',
                 properties: {
                     symbol: { type: 'string', default: 'SOLUSDT' }
@@ -33,7 +33,7 @@ export async function toolsList() {
         {
             name: 'get_funding_rate',
             description: 'Fetch recent funding rates (futures)',
-            input_schema: {
+            inputSchema: {
                 type: 'object',
                 properties: {
                     symbol: { type: 'string', default: 'SOLUSDT' },
@@ -45,7 +45,7 @@ export async function toolsList() {
         {
             name: 'get_open_interest',
             description: 'Fetch open interest (futures)',
-            input_schema: {
+            inputSchema: {
                 type: 'object',
                 properties: {
                     symbol: { type: 'string', default: 'SOLUSDT' },
