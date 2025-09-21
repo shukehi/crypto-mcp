@@ -78,6 +78,8 @@ export async function handleRpc(req: any): Promise<JSONValue> {
           protocolVersion: '2024-11-05',
           capabilities: {
             tools: {},
+            prompts: {},
+            resources: {}
           },
           serverInfo: {
             name: 'crypto-binance',
@@ -98,6 +100,14 @@ export async function handleRpc(req: any): Promise<JSONValue> {
     if (req.method === 'tools/list') {
       const result = await toolsList();
       return { jsonrpc: '2.0', id: req.id, result: { tools: result } };
+    }
+
+    if (req.method === 'prompts/list') {
+      return { jsonrpc: '2.0', id: req.id, result: { prompts: [] } };
+    }
+
+    if (req.method === 'resources/list') {
+      return { jsonrpc: '2.0', id: req.id, result: { resources: [] } };
     }
     if (req.method === 'tools/call') {
       const { name, arguments: raw } = req.params || {};
