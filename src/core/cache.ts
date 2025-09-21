@@ -15,7 +15,7 @@ export class LRUCache<T=any> {
     this.map.set(key, { key, value, ts: Date.now() });
     if (this.map.size > this.max) {
       const firstKey = this.map.keys().next().value;
-      this.map.delete(firstKey);
+      if (firstKey) this.map.delete(firstKey);
     }
   }
   has(key: string) { return this.map.has(key); }

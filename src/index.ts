@@ -10,7 +10,7 @@ if (TRANSPORT === 'stdio') {
   process.stdout.setDefaultEncoding('utf8');
   logger.info({ transport: 'stdio' }, 'MCP server starting (stdio)');
   process.stdin.on('data', async (chunk) => {
-    for (const line of chunk.trim().split('\n')) {
+    for (const line of chunk.toString().trim().split('\n')) {
       if (!line) continue;
       try {
         const req = JSON.parse(line);
