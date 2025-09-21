@@ -9,6 +9,10 @@ if (TRANSPORT === 'stdio') {
   process.stdin.setEncoding('utf8');
   process.stdout.setDefaultEncoding('utf8');
   logger.info({ transport: 'stdio' }, 'MCP server starting (stdio)');
+
+  // Keep the process alive
+  process.stdin.resume();
+
   process.stdin.on('data', async (chunk) => {
     for (const line of chunk.toString().trim().split('\n')) {
       if (!line) continue;
@@ -27,6 +31,17 @@ if (TRANSPORT === 'stdio') {
         process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error', data: String(e?.message||e) }}) + '\n');
       }
     }
+  });
+
+  // Handle graceful shutdown
+  process.on('SIGINT', () => {
+    logger.info('Received SIGINT, shutting down gracefully');
+    process.exit(0);
+  });
+
+  process.on('SIGTERM', () => {
+    logger.info('Received SIGTERM, shutting down gracefully');
+    process.exit(0);
   });
 } else {
   const PORT = Number(process.env.PORT || 8080);
