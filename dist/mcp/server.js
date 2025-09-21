@@ -117,14 +117,36 @@ export async function handleRpc(req) {
                         since: raw?.since || null
                     };
                     const result = await getOhlcvTool(args);
-                    return { jsonrpc: '2.0', id: req.id, result: { content: result } };
+                    return {
+                        jsonrpc: '2.0',
+                        id: req.id,
+                        result: {
+                            content: [
+                                {
+                                    type: "text",
+                                    text: JSON.stringify(result, null, 2)
+                                }
+                            ]
+                        }
+                    };
                 }
                 case 'get_mark_price': {
                     const args = {
                         symbol: raw?.symbol || 'SOLUSDT'
                     };
                     const result = await getMarkPriceTool(args);
-                    return { jsonrpc: '2.0', id: req.id, result: { content: result } };
+                    return {
+                        jsonrpc: '2.0',
+                        id: req.id,
+                        result: {
+                            content: [
+                                {
+                                    type: "text",
+                                    text: JSON.stringify(result, null, 2)
+                                }
+                            ]
+                        }
+                    };
                 }
                 case 'get_funding_rate': {
                     const args = {
@@ -132,7 +154,18 @@ export async function handleRpc(req) {
                         limit: raw?.limit || 100
                     };
                     const result = await getFundingRateTool(args);
-                    return { jsonrpc: '2.0', id: req.id, result: { content: result } };
+                    return {
+                        jsonrpc: '2.0',
+                        id: req.id,
+                        result: {
+                            content: [
+                                {
+                                    type: "text",
+                                    text: JSON.stringify(result, null, 2)
+                                }
+                            ]
+                        }
+                    };
                 }
                 case 'get_open_interest': {
                     const args = {
@@ -141,7 +174,18 @@ export async function handleRpc(req) {
                         limit: raw?.limit || 200
                     };
                     const result = await getOpenInterestTool(args);
-                    return { jsonrpc: '2.0', id: req.id, result: { content: result } };
+                    return {
+                        jsonrpc: '2.0',
+                        id: req.id,
+                        result: {
+                            content: [
+                                {
+                                    type: "text",
+                                    text: JSON.stringify(result, null, 2)
+                                }
+                            ]
+                        }
+                    };
                 }
                 default:
                     return { jsonrpc: '2.0', id: req.id, error: { code: -32601, message: 'Unknown tool' } };
