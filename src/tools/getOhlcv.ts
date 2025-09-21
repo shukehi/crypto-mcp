@@ -1,20 +1,19 @@
-import { z } from 'zod';
 import { RateLimiter } from '../core/limiter.js';
 import { retry } from '../core/retry.js';
 import { futuresOhlcv } from '../providers/binanceFutures.js';
 import { spotOhlcv } from '../providers/binanceSpot.js';
 
-export const GetOhlcvArgsSchema = z.object({
-  market: z.enum(['spot','futures']).default('futures'),
-  symbol: z.string().default('SOLUSDT'),
-  timeframe: z.enum(['1m','5m','15m','1h','4h','1d']).default('1h'),
-  limit: z.number().int().min(10).max(1500).default(500),
-  since: z.number().int().nullable().optional()
-});
+export interface GetOhlcvArgs {
+  market: 'spot' | 'futures';
+  symbol: string;
+  timeframe: '1m' | '5m' | '15m' | '1h' | '4h' | '1d';
+  limit: number;
+  since?: number | null;
+}
 
 const limiter = new RateLimiter(10, 10);
 
-export async function getOhlcvTool(args: z.infer<typeof GetOhlcvArgsSchema>) {
+export async function getOhlcvTool(args: GetOhlcvArgs) {
   await limiter.removeToken();
   const rows = await retry(async () => {
     if (args.market === 'futures') return futuresOhlcv(args.symbol, args.timeframe, args.limit, args.since ?? undefined);

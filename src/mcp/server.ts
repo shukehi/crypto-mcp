@@ -1,9 +1,8 @@
-import { z } from 'zod';
 import { logger } from '../core/logger.js';
-import { getOhlcvTool, GetOhlcvArgsSchema } from '../tools/getOhlcv.js';
-import { getMarkPriceTool, GetMarkPriceArgsSchema } from '../tools/getMarkPrice.js';
-import { getFundingRateTool, GetFundingRateArgsSchema } from '../tools/getFundingRate.js';
-import { getOpenInterestTool, GetOpenInterestArgsSchema } from '../tools/getOpenInterest.js';
+import { getOhlcvTool } from '../tools/getOhlcv.js';
+import { getMarkPriceTool } from '../tools/getMarkPrice.js';
+import { getFundingRateTool } from '../tools/getFundingRate.js';
+import { getOpenInterestTool } from '../tools/getOpenInterest.js';
 
 type JSONValue = any;
 type JSONRPC = { jsonrpc: '2.0'; id?: number|string|null; method: string; params?: any };
@@ -54,7 +53,9 @@ export async function toolsList() {
       input_schema: {
         type: 'object',
         properties: {
-          symbol: { type: 'string', default: 'SOLUSDT' }
+          symbol: { type: 'string', default: 'SOLUSDT' },
+          timeframe: { type: 'string', enum: ['5m', '15m', '1h', '4h', '1d'], default: '1h' },
+          limit: { type: 'number', minimum: 1, maximum: 1000, default: 200 }
         },
         required: []
       },
@@ -103,22 +104,37 @@ export async function handleRpc(req: any): Promise<JSONValue> {
       if (!name) throw new Error('Missing tool name');
       switch (name) {
         case 'get_ohlcv': {
-          const args = GetOhlcvArgsSchema.parse(raw || {});
+          const args = {
+            market: raw?.market || 'futures',
+            symbol: raw?.symbol || 'SOLUSDT',
+            timeframe: raw?.timeframe || '1h',
+            limit: raw?.limit || 500,
+            since: raw?.since || null
+          };
           const result = await getOhlcvTool(args);
           return { jsonrpc: '2.0', id: req.id, result: { content: result } };
         }
         case 'get_mark_price': {
-          const args = GetMarkPriceArgsSchema.parse(raw || {});
+          const args = {
+            symbol: raw?.symbol || 'SOLUSDT'
+          };
           const result = await getMarkPriceTool(args);
           return { jsonrpc: '2.0', id: req.id, result: { content: result } };
         }
         case 'get_funding_rate': {
-          const args = GetFundingRateArgsSchema.parse(raw || {});
+          const args = {
+            symbol: raw?.symbol || 'SOLUSDT',
+            limit: raw?.limit || 100
+          };
           const result = await getFundingRateTool(args);
           return { jsonrpc: '2.0', id: req.id, result: { content: result } };
         }
         case 'get_open_interest': {
-          const args = GetOpenInterestArgsSchema.parse(raw || {});
+          const args = {
+            symbol: raw?.symbol || 'SOLUSDT',
+            timeframe: raw?.timeframe || '1h',
+            limit: raw?.limit || 200
+          };
           const result = await getOpenInterestTool(args);
           return { jsonrpc: '2.0', id: req.id, result: { content: result } };
         }
