@@ -83,7 +83,11 @@ export async function handleRpc(req) {
                 }
             };
         }
-        if (req.method === 'initialized') {
+        if (req.method === 'initialized' || req.method === 'notifications/initialized') {
+            // Notifications don't have responses
+            if (req.method === 'notifications/initialized') {
+                return null; // No response for notifications
+            }
             return { jsonrpc: '2.0', id: req.id, result: {} };
         }
         if (req.method === 'ping') {

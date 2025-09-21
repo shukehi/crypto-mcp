@@ -15,8 +15,13 @@ if (TRANSPORT === 'stdio') {
                 const req = JSON.parse(line);
                 logger.debug({ req }, 'Received request');
                 const res = await handleRpc(req);
-                logger.debug({ res }, 'Sending response');
-                process.stdout.write(JSON.stringify(res) + '\n');
+                if (res !== null) {
+                    logger.debug({ res }, 'Sending response');
+                    process.stdout.write(JSON.stringify(res) + '\n');
+                }
+                else {
+                    logger.debug('No response for notification');
+                }
             }
             catch (e) {
                 logger.error({ line, error: String(e?.message || e) }, 'Parse error');
