@@ -71,7 +71,25 @@ npm run build
       "command": "node",
       "args": ["/Users/aries/Dve/crypto-mcp/dist/index.js"],
       "env": {
-        "TRANSPORT": "stdio"
+        "TRANSPORT": "stdio",
+        "LOG_LEVEL": "debug"
+      }
+    }
+  }
+}
+```
+
+### 调试模式配置（故障排除）
+如果连接失败，启用调试日志查看详细信息：
+```json
+{
+  "mcpServers": {
+    "crypto-binance": {
+      "command": "node",
+      "args": ["/Users/aries/Dve/crypto-mcp/dist/index.js"],
+      "env": {
+        "TRANSPORT": "stdio",
+        "LOG_LEVEL": "debug"
       }
     }
   }

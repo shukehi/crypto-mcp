@@ -62,9 +62,11 @@ export async function toolsList() {
   ];
 }
 
-export async function handleRpc(req: JSONRPC): Promise<JSONValue> {
+export async function handleRpc(req: any): Promise<JSONValue> {
   try {
-    if (!req || req.jsonrpc !== '2.0') throw new Error('Invalid JSON-RPC');
+    // Be more lenient with JSON-RPC validation
+    if (!req || typeof req !== 'object') throw new Error('Invalid request');
+    if (req.jsonrpc && req.jsonrpc !== '2.0') throw new Error('Invalid JSON-RPC version');
 
     // MCP Protocol Methods
     if (req.method === 'initialize') {
@@ -124,9 +126,9 @@ export async function handleRpc(req: JSONRPC): Promise<JSONValue> {
           return { jsonrpc: '2.0', id: req.id, error: { code: -32601, message: 'Unknown tool' } };
       }
     }
-    return { jsonrpc: '2.0', id: req.id, error: { code: -32601, message: 'Unknown method' } };
+    return { jsonrpc: '2.0', id: req.id || null, error: { code: -32601, message: 'Unknown method' } };
   } catch (e:any) {
-    logger.error({ err: String(e?.message || e) }, 'rpc_error');
-    return { jsonrpc: '2.0', id: req.id, error: { code: -32000, message: 'Server error', data: String(e?.message || e) } };
+    logger.error({ err: String(e?.message || e), req }, 'rpc_error');
+    return { jsonrpc: '2.0', id: req?.id || null, error: { code: -32000, message: 'Server error', data: String(e?.message || e) } };
   }
 }

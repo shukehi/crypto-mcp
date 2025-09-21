@@ -14,9 +14,12 @@ if (TRANSPORT === 'stdio') {
       if (!line) continue;
       try {
         const req = JSON.parse(line);
+        logger.debug({ req }, 'Received request');
         const res = await handleRpc(req);
+        logger.debug({ res }, 'Sending response');
         process.stdout.write(JSON.stringify(res) + '\n');
       } catch (e:any) {
+        logger.error({ line, error: String(e?.message||e) }, 'Parse error');
         process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error', data: String(e?.message||e) }}) + '\n');
       }
     }
