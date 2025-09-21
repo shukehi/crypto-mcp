@@ -1,0 +1,47 @@
+# Railway ignore file - exclude files from deployment
+
+# Development files
+node_modules/
+.git/
+.DS_Store
+*.log
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Development directories
+coverage/
+.nyc_output/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local testing files
+ssl/
+deploy/nginx-*.conf
+deploy/setup-*.sh
+deploy/*.sh
+
+# Documentation (keep only essential)
+CLAUDE.md
+MCP_SETUP.md
+AGENTS.md
+
+# Build artifacts (will be rebuilt)
+dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional: exclude local testing configs
+deploy/
+!deploy/railway/
