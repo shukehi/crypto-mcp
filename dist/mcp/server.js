@@ -14,8 +14,7 @@ export async function toolsList() {
                     market: { type: 'string', enum: ['spot', 'futures'], default: 'futures' },
                     symbol: { type: 'string', default: 'SOLUSDT' },
                     timeframe: { type: 'string', enum: ['1m', '5m', '15m', '1h', '4h', '1d'], default: '1h' },
-                    limit: { type: 'number', minimum: 10, maximum: 1500, default: 500 },
-                    since: { type: 'number', nullable: true }
+                    limit: { type: 'number', minimum: 10, maximum: 1500, default: 500 }
                 },
                 required: []
             },
