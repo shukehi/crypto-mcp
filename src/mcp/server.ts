@@ -13,22 +13,51 @@ export async function toolsList() {
     {
       name: 'get_ohlcv',
       description: 'Fetch OHLCV (K-lines) from Binance spot or futures',
-      input_schema: GetOhlcvArgsSchema,
+      input_schema: {
+        type: 'object',
+        properties: {
+          market: { type: 'string', enum: ['spot', 'futures'], default: 'futures' },
+          symbol: { type: 'string', default: 'SOLUSDT' },
+          timeframe: { type: 'string', enum: ['1m', '5m', '15m', '1h', '4h', '1d'], default: '1h' },
+          limit: { type: 'number', minimum: 10, maximum: 1500, default: 500 },
+          since: { type: 'number', nullable: true }
+        },
+        required: []
+      },
     },
     {
       name: 'get_mark_price',
       description: 'Fetch mark price (futures)',
-      input_schema: GetMarkPriceArgsSchema,
+      input_schema: {
+        type: 'object',
+        properties: {
+          symbol: { type: 'string', default: 'SOLUSDT' }
+        },
+        required: []
+      },
     },
     {
       name: 'get_funding_rate',
       description: 'Fetch recent funding rates (futures)',
-      input_schema: GetFundingRateArgsSchema,
+      input_schema: {
+        type: 'object',
+        properties: {
+          symbol: { type: 'string', default: 'SOLUSDT' },
+          limit: { type: 'number', minimum: 1, maximum: 1000, default: 100 }
+        },
+        required: []
+      },
     },
     {
       name: 'get_open_interest',
       description: 'Fetch open interest (futures)',
-      input_schema: GetOpenInterestArgsSchema,
+      input_schema: {
+        type: 'object',
+        properties: {
+          symbol: { type: 'string', default: 'SOLUSDT' }
+        },
+        required: []
+      },
     }
   ];
 }
@@ -36,9 +65,36 @@ export async function toolsList() {
 export async function handleRpc(req: JSONRPC): Promise<JSONValue> {
   try {
     if (!req || req.jsonrpc !== '2.0') throw new Error('Invalid JSON-RPC');
+
+    // MCP Protocol Methods
+    if (req.method === 'initialize') {
+      return {
+        jsonrpc: '2.0',
+        id: req.id,
+        result: {
+          protocolVersion: '2024-11-05',
+          capabilities: {
+            tools: {},
+          },
+          serverInfo: {
+            name: 'crypto-binance',
+            version: '0.1.0'
+          }
+        }
+      };
+    }
+
+    if (req.method === 'initialized') {
+      return { jsonrpc: '2.0', id: req.id, result: {} };
+    }
+
+    if (req.method === 'ping') {
+      return { jsonrpc: '2.0', id: req.id, result: {} };
+    }
+
     if (req.method === 'tools/list') {
       const result = await toolsList();
-      return { jsonrpc: '2.0', id: req.id, result };
+      return { jsonrpc: '2.0', id: req.id, result: { tools: result } };
     }
     if (req.method === 'tools/call') {
       const { name, arguments: raw } = req.params || {};
