@@ -12,7 +12,11 @@ symbol, fetch 24h ticker data, retrieve candlestick data, and run a sample dice 
 | `fetch`                     | Returns Binance 24h ticker data for an ID produced by `search`          |
 | `get_binance_klines`        | Retrieves recent candlestick data for a Binance spot symbol             |
 | `get_binance_perp_klines`   | Retrieves USDⓈ-M perpetual (futures) candlestick data                   |
-| `roll_dice`                 | Demonstration tool from the MCP starter template                        |
+| `price_action_summary`     | Analyzes recent structure and returns S/R + breakout ideas               |
+| `get_risk_policy`          | Returns the current in-memory risk policy                               |
+| `set_risk_policy`          | Updates the risk policy (partial updates allowed)                        |
+| `draft_order`              | Drafts a trade with RR + policy evaluation                              |
+| `roll_dice`                | Demonstration tool from the MCP starter template                        |
 
 > **Important:** ChatGPT validates the presence of `search` and `fetch`. Do not remove or rename
 > them; new tools should be added alongside these baseline ones.

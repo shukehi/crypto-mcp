@@ -21,6 +21,18 @@ const handler = createMcpHandler(
         get_binance_perp_klines: {
           description: 'Fetches Binance USDⓈ-M perpetual candlestick data',
         },
+        price_action_summary: {
+          description: 'Summarizes price action structure and S/R levels.',
+        },
+        get_risk_policy: {
+          description: 'Returns the current risk policy snapshot.',
+        },
+        set_risk_policy: {
+          description: 'Updates the risk policy (partial updates allowed).',
+        },
+        draft_order: {
+          description: 'Drafts an order and evaluates it against risk rules.',
+        },
         search: {
           description: 'Searches Binance symbols and returns IDs for fetch.',
         },

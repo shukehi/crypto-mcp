@@ -6,6 +6,9 @@ import {
   registerSearchTool,
 } from './registerBinanceKlinesTool';
 import { registerFuturesKlinesTool } from './registerFuturesKlinesTool';
+import { registerPriceActionTool } from './registerPriceActionTool';
+import { registerRiskPolicyTools } from './registerRiskPolicyTools';
+import { registerDraftOrderTool } from './registerDraftOrderTool';
 
 export function registerTools(server: McpServer) {
   registerRollDiceTool(server);
@@ -13,4 +16,7 @@ export function registerTools(server: McpServer) {
   registerFuturesKlinesTool(server);
   registerSearchTool(server);
   registerFetchTool(server);
+  registerPriceActionTool(server);
+  registerRiskPolicyTools(server);
+  registerDraftOrderTool(server);
 }

@@ -13,7 +13,7 @@
 
 ## Coding Style & Naming Conventions
 - Use TypeScript with default Next.js configuration; keep imports path-based via the configured `@/` alias.
-- MCP tools must be named in `snake_case` (`search`, `fetch`, `get_binance_klines`, `get_binance_perp_klines`, `roll_dice`). New tools must follow the same pattern.
+- MCP tools must be named in `snake_case` (`search`, `fetch`, `get_binance_klines`, `get_binance_perp_klines`, `price_action_summary`, `get_risk_policy`, `set_risk_policy`, `draft_order`, `roll_dice`). New tools must follow the same pattern.
 - Always return a plain-text summary in `content`; `structuredContent` is optional but encouraged for machine parsing.
 
 ## Testing Guidelines

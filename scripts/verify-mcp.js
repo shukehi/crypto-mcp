@@ -150,6 +150,49 @@ async function main() {
       throw new Error(`get_binance_perp_klines reported error: ${JSON.stringify(futuresResponse.result)}`);
     }
 
+    const priceActionResponse = await callMcp('tools/call', {
+      name: 'price_action_summary',
+      arguments: { symbol: 'BTCUSDT', interval: '1h', lookback: 120, market: 'perp' },
+    });
+    if (priceActionResponse.result?.isError) {
+      throw new Error(
+        `price_action_summary reported error: ${JSON.stringify(priceActionResponse.result)}`,
+      );
+    }
+
+    const riskPolicyResponse = await callMcp('tools/call', {
+      name: 'get_risk_policy',
+      arguments: {},
+    });
+    if (riskPolicyResponse.result?.isError) {
+      throw new Error(`get_risk_policy reported error: ${JSON.stringify(riskPolicyResponse.result)}`);
+    }
+
+    await callMcp('tools/call', {
+      name: 'set_risk_policy',
+      arguments: {
+        perTradeMaxRiskPct:
+          riskPolicyResponse.result?.structuredContent?.policy?.perTradeMaxRiskPct ?? 2,
+      },
+    });
+
+    const draftResponse = await callMcp('tools/call', {
+      name: 'draft_order',
+      arguments: {
+        symbol: 'BTCUSDT',
+        side: 'BUY',
+        notionalUsd: 300,
+        stopLossPct: 2,
+        takeProfitPct: 5,
+        leverage: 3,
+        equityUsd: 1000,
+        market: 'perp',
+      },
+    });
+    if (draftResponse.result?.isError) {
+      throw new Error(`draft_order reported error: ${JSON.stringify(draftResponse.result)}`);
+    }
+
     console.log('MCP verification succeeded.');
   } finally {
     cleanup();
