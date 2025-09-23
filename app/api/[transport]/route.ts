@@ -30,6 +30,7 @@ const handler = createMcpHandler(
   {
     basePath: '/api',
     verboseLogs: process.env.NODE_ENV !== 'production',
+    disableSse: true,
   },
 );
 
