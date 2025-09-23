@@ -33,6 +33,15 @@ const handler = createMcpHandler(
         draft_order: {
           description: 'Drafts an order and evaluates it against risk rules.',
         },
+        request_confirmation: {
+          description: 'Creates a confirmation ticket for manual approval.',
+        },
+        get_confirmation: {
+          description: 'Retrieves a confirmation ticket by ID.',
+        },
+        list_confirmations: {
+          description: 'Lists pending confirmation tickets.',
+        },
         search: {
           description: 'Searches Binance symbols and returns IDs for fetch.',
         },

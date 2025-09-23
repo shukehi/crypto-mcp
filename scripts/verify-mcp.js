@@ -193,6 +193,41 @@ async function main() {
       throw new Error(`draft_order reported error: ${JSON.stringify(draftResponse.result)}`);
     }
 
+    const confirmationResponse = await callMcp('tools/call', {
+      name: 'request_confirmation',
+      arguments: {
+        draft: draftResponse.result?.structuredContent?.draft ?? {},
+        reason: 'verify-mcp smoke test',
+        ttlSeconds: 120,
+      },
+    });
+    if (confirmationResponse.result?.isError) {
+      throw new Error(
+        `request_confirmation reported error: ${JSON.stringify(confirmationResponse.result)}`,
+      );
+    }
+
+    const confirmationId = confirmationResponse.result?.structuredContent?.confirmation?.id;
+    if (!confirmationId) {
+      throw new Error('request_confirmation did not return confirmation ID');
+    }
+
+    const fetchConfirmation = await callMcp('tools/call', {
+      name: 'get_confirmation',
+      arguments: { confirmationId },
+    });
+    if (fetchConfirmation.result?.isError) {
+      throw new Error(`get_confirmation reported error: ${JSON.stringify(fetchConfirmation.result)}`);
+    }
+
+    const listConfirmation = await callMcp('tools/call', {
+      name: 'list_confirmations',
+      arguments: {},
+    });
+    if (listConfirmation.result?.isError) {
+      throw new Error(`list_confirmations reported error: ${JSON.stringify(listConfirmation.result)}`);
+    }
+
     console.log('MCP verification succeeded.');
   } finally {
     cleanup();

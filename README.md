@@ -16,6 +16,9 @@ symbol, fetch 24h ticker data, retrieve candlestick data, and run a sample dice 
 | `get_risk_policy`          | Returns the current in-memory risk policy                               |
 | `set_risk_policy`          | Updates the risk policy (partial updates allowed)                        |
 | `draft_order`              | Drafts a trade with RR + policy evaluation                              |
+| `request_confirmation`     | Creates a confirmation ticket for manual approval                        |
+| `get_confirmation`         | Retrieves a confirmation ticket by ID                                   |
+| `list_confirmations`       | Lists all pending confirmations                                         |
 | `roll_dice`                | Demonstration tool from the MCP starter template                        |
 
 > **Important:** ChatGPT validates the presence of `search` and `fetch`. Do not remove or rename
