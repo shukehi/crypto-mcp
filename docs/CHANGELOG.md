@@ -1,7 +1,9 @@
 # Changelog
 
 ## Unreleased
-- Begin Stage 4 development on dedicated feature branches (pending).
+- Added `ENABLE_ADVANCED_TOOLS` flag. Advanced tools (price action, risk policy, confirmations, scheduler)
+  are disabled by default for maximum compatibility with ChatGPT Developer Mode.
+- Normalized MCP request headers to accept missing `text/event-stream` entries.
 
 ## v1.1.0 – Stage 3 (Confirmations & Scheduling)
 - Added in-memory confirmation store with `request_confirmation`, `get_confirmation`, `list_confirmations`.

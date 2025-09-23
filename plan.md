@@ -39,3 +39,4 @@ This roadmap builds on baseline tag `v1.0.0` and keeps the ChatGPT connector ful
 - Stage 2 merged in `c3536a4`.
 - Stage 3 merged in `de08824` / `32bf9dd`.
 - Future work (Stage 4+) must branch from latest `main` and follow the above PR process.
+- Advanced toolsets (Stage 2/3 outputs) can be toggled via `ENABLE_ADVANCED_TOOLS=true`. Default deployment keeps them disabled to preserve ChatGPT connectivity.

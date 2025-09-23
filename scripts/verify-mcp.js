@@ -12,6 +12,8 @@ const REQUIRED_TOOLS = ['search', 'fetch', 'get_binance_klines', 'get_binance_pe
 const PORT = process.env.MCP_VERIFY_PORT || '4311';
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 
+process.env.ENABLE_ADVANCED_TOOLS = 'true';
+
 async function runCommand(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {

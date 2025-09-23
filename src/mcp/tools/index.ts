@@ -18,9 +18,11 @@ export function registerTools(server: McpServer) {
   registerFuturesKlinesTool(server);
   registerSearchTool(server);
   registerFetchTool(server);
-  registerPriceActionTool(server);
-  registerRiskPolicyTools(server);
-  registerDraftOrderTool(server);
-  registerConfirmationTool(server);
-  registerSchedulerTools(server);
+  if (process.env.ENABLE_ADVANCED_TOOLS === 'true') {
+    registerPriceActionTool(server);
+    registerRiskPolicyTools(server);
+    registerDraftOrderTool(server);
+    registerConfirmationTool(server);
+    registerSchedulerTools(server);
+  }
 }
