@@ -58,4 +58,24 @@ const handler = createMcpHandler(
   },
 );
 
-export { handler as GET, handler as POST, handler as DELETE };
+const ensureAcceptHeader = (req: Request): Request => {
+  const accept = req.headers.get('accept') ?? '';
+  if (accept.includes('text/event-stream') && accept.includes('application/json')) {
+    return req;
+  }
+  const headers = new Headers(req.headers);
+  const values = new Set(
+    accept
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean),
+  );
+  values.add('application/json');
+  values.add('text/event-stream');
+  headers.set('accept', Array.from(values).join(', '));
+  return new Request(req, { headers });
+};
+
+export const GET = (req: Request) => handler(ensureAcceptHeader(req));
+export const POST = (req: Request) => handler(ensureAcceptHeader(req));
+export const DELETE = (req: Request) => handler(ensureAcceptHeader(req));
