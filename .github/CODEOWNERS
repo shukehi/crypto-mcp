@@ -1,0 +1,8 @@
+# Protect critical MCP files
+app/api/[transport]/ @shukehi
+src/mcp/tools/ @shukehi
+scripts/verify-mcp.js @shukehi
+README.md @shukehi
+CONTRIBUTING.md @shukehi
+.github/workflows/ @shukehi
+* @shukehi
