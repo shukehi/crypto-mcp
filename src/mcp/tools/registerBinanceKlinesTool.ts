@@ -1,6 +1,9 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
+import type { Candle } from '@/src/mcp/types';
+import { sanitizeSymbol, toIsoString } from '@/src/mcp/utils';
+
 const binanceIntervals = [
   '1m',
   '3m',
@@ -21,7 +24,7 @@ const binanceIntervals = [
 
 type BinanceInterval = (typeof binanceIntervals)[number];
 
-type BinanceKline = [
+type BinanceKlineRow = [
   number,
   string,
   string,
@@ -80,10 +83,6 @@ function resolveInterval(input?: string): BinanceInterval {
   return (match ?? DEFAULT_INTERVAL) as BinanceInterval;
 }
 
-function sanitizeSymbol(input: string) {
-  return input.replace(/[^A-Z0-9]/g, '').slice(0, 20);
-}
-
 function rememberResult(id: string, title: string, description: string, symbol: string, interval: BinanceInterval) {
   searchCache.set(id, {
     id,
@@ -133,14 +132,14 @@ export function registerBinanceKlinesTool(server: McpServer) {
           };
         }
 
-        const candles = (data as BinanceKline[]).map((kline) => ({
-          openTime: Number(kline[0]),
-          open: kline[1],
-          high: kline[2],
-          low: kline[3],
-          close: kline[4],
-          volume: kline[5],
-          closeTime: Number(kline[6]),
+        const candles: Candle[] = (data as BinanceKlineRow[]).map((row) => ({
+          openTime: Number(row[0]),
+          open: row[1],
+          high: row[2],
+          low: row[3],
+          close: row[4],
+          volume: row[5],
+          closeTime: Number(row[6]),
         }));
 
         if (candles.length === 0) {
@@ -157,13 +156,11 @@ export function registerBinanceKlinesTool(server: McpServer) {
         const first = candles[0];
         const last = candles[candles.length - 1];
 
-        const formatTime = (ms: number) => new Date(ms).toISOString();
-
         const recentPreview = candles
           .slice(-5)
           .map((candle) =>
             [
-              formatTime(candle.closeTime),
+              toIsoString(candle.closeTime),
               `O:${candle.open}`,
               `H:${candle.high}`,
               `L:${candle.low}`,
@@ -177,7 +174,7 @@ export function registerBinanceKlinesTool(server: McpServer) {
           `交易对: ${symbol}`,
           `周期: ${interval}`,
           `返回条目: ${candles.length} (limit=${limit ?? 50})`,
-          `时间范围: ${formatTime(first.openTime)} → ${formatTime(last.closeTime)}`,
+          `时间范围: ${toIsoString(first.openTime)} → ${toIsoString(last.closeTime)}`,
           `最新收盘价: ${last.close} (最高 ${last.high} / 最低 ${last.low})`,
           '',
           '最近 5 根 K 线:',
@@ -203,15 +200,15 @@ export function registerBinanceKlinesTool(server: McpServer) {
             summary: {
               count: candles.length,
               limit: limit ?? 50,
-              openTime: formatTime(first.openTime),
-              closeTime: formatTime(last.closeTime),
+              openTime: toIsoString(first.openTime),
+              closeTime: toIsoString(last.closeTime),
               lastCandle: {
                 open: last.open,
                 high: last.high,
                 low: last.low,
                 close: last.close,
                 volume: last.volume,
-                closeTime: formatTime(last.closeTime),
+                closeTime: toIsoString(last.closeTime),
               },
             },
           },
@@ -247,7 +244,7 @@ export function registerSearchTool(server: McpServer) {
     searchToolSchema,
     async ({ query }) => {
       const tokens = query.trim().split(/\s+/);
-      const symbolCandidate = tokens[0]?.toUpperCase().replace(/[^A-Z0-9]/g, '') ?? '';
+      const symbolCandidate = sanitizeSymbol(tokens[0] ?? '');
       if (!symbolCandidate) {
         return {
           content: [{ type: 'text', text: '请输入有效的交易对，例如 "BTCUSDT" 或 "BTCUSDT 1h"。' }],
@@ -351,11 +348,4 @@ export function registerFetchTool(server: McpServer) {
       }
     },
   );
-}
-
-export function registerTools(server: McpServer) {
-  registerRollDiceTool(server);
-  registerBinanceKlinesTool(server);
-  registerSearchTool(server);
-  registerFetchTool(server);
 }

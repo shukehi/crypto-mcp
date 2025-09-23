@@ -1,5 +1,5 @@
 import { createMcpHandler } from 'mcp-handler';
-import { registerTools } from '@/src/mcp/tools/registerBinanceKlinesTool';
+import { registerTools } from '@/src/mcp/tools';
 
 const handler = createMcpHandler(
   async (server) => {
