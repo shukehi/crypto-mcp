@@ -29,6 +29,13 @@ This roadmap builds on baseline tag `v1.0.0` and keeps the ChatGPT connector ful
 - Ship only after security review and encrypted secret storage.
 
 ## Definition of Done (per PR)
-- Tests: `pnpm verify:mcp` + new automated checks pass.
+- Work must happen on a feature branch (e.g., `feature/stage4-execution`). Merge via PR only after review.
+- Tests: `pnpm verify:mcp` + any new automated checks pass.
 - Docs: README / AGENTS / CHANGELOG updated with new tools and usage.
 - Safety: baseline tools untouched; `disableSse` remains true; structured outputs retain text summaries.
+
+## Progress Log
+- Stage 0–1 complete on `main` (tags `v1.0.0`, `v1.0.1`).
+- Stage 2 merged in `c3536a4`.
+- Stage 3 merged in `de08824` / `32bf9dd`.
+- Future work (Stage 4+) must branch from latest `main` and follow the above PR process.

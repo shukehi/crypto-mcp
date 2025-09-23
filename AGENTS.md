@@ -22,6 +22,7 @@
 
 ## Commit & Pull Request Guidelines
 - Follow concise, imperative commit messages (e.g., `Add search/fetch tools and sanitize Binance symbols`).
+- Create a feature branch for each milestone (e.g., `feature/stage4-execution`) before making changes.
 - Open pull requests from feature branches; describe changes, include relevant commands run (`pnpm verify:mcp`), and link to issues when applicable.
 - Ensure PRs pass the GitHub Actions “Verify MCP” workflow before requesting review.
 

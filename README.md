@@ -74,3 +74,7 @@ baseline tools are missing or return an error.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution rules, including why the baseline tools and
 SSE configuration must remain intact.
+
+## Release Notes
+
+Historical milestones and release tags are tracked in [docs/CHANGELOG.md](./docs/CHANGELOG.md).
