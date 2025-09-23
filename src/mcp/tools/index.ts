@@ -10,6 +10,7 @@ import { registerPriceActionTool } from './registerPriceActionTool';
 import { registerRiskPolicyTools } from './registerRiskPolicyTools';
 import { registerDraftOrderTool } from './registerDraftOrderTool';
 import { registerConfirmationTool } from './registerConfirmationTool';
+import { registerSchedulerTools } from './registerSchedulerTools';
 
 export function registerTools(server: McpServer) {
   registerRollDiceTool(server);
@@ -21,4 +22,5 @@ export function registerTools(server: McpServer) {
   registerRiskPolicyTools(server);
   registerDraftOrderTool(server);
   registerConfirmationTool(server);
+  registerSchedulerTools(server);
 }
