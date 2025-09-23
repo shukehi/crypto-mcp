@@ -8,7 +8,7 @@
 const { spawn } = require('node:child_process');
 const { setTimeout: delay } = require('node:timers/promises');
 
-const REQUIRED_TOOLS = ['search', 'fetch', 'get_binance_klines', 'roll_dice'];
+const REQUIRED_TOOLS = ['search', 'fetch', 'get_binance_klines', 'get_binance_perp_klines', 'roll_dice'];
 const PORT = process.env.MCP_VERIFY_PORT || '4311';
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 
@@ -141,6 +141,13 @@ async function main() {
     });
     if (klinesResponse.result?.isError) {
       throw new Error(`get_binance_klines reported error: ${JSON.stringify(klinesResponse.result)}`);
+    }
+    const futuresResponse = await callMcp('tools/call', {
+      name: 'get_binance_perp_klines',
+      arguments: { symbol: 'BTCUSDT', interval: '1h', limit: 30 },
+    });
+    if (futuresResponse.result?.isError) {
+      throw new Error(`get_binance_perp_klines reported error: ${JSON.stringify(futuresResponse.result)}`);
     }
 
     console.log('MCP verification succeeded.');

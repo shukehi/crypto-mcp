@@ -2,27 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 import type { Candle } from '@/src/mcp/types';
-import { sanitizeSymbol, toIsoString } from '@/src/mcp/utils';
-
-const binanceIntervals = [
-  '1m',
-  '3m',
-  '5m',
-  '15m',
-  '30m',
-  '1h',
-  '2h',
-  '4h',
-  '6h',
-  '8h',
-  '12h',
-  '1d',
-  '3d',
-  '1w',
-  '1M',
-] as const;
-
-type BinanceInterval = (typeof binanceIntervals)[number];
+import { BINANCE_INTERVALS, type BinanceInterval, sanitizeSymbol, toIsoString } from '@/src/mcp/utils';
 
 type BinanceKlineRow = [
   number,
@@ -44,7 +24,7 @@ const schema = {
     .string()
     .min(1, 'Symbol is required')
     .transform((value) => value.replace('/', '').toUpperCase()),
-  interval: z.enum(binanceIntervals),
+  interval: z.enum(BINANCE_INTERVALS),
   limit: z.number().int().min(1).max(1000).optional(),
   startTime: z.number().int().nonnegative().optional(),
   endTime: z.number().int().nonnegative().optional(),
@@ -79,7 +59,7 @@ function makeResultId(symbol: string, interval: string) {
 function resolveInterval(input?: string): BinanceInterval {
   if (!input) return DEFAULT_INTERVAL;
   const normalized = input.trim();
-  const match = binanceIntervals.find((item) => item.toLowerCase() === normalized.toLowerCase());
+  const match = BINANCE_INTERVALS.find((item) => item.toLowerCase() === normalized.toLowerCase());
   return (match ?? DEFAULT_INTERVAL) as BinanceInterval;
 }
 

@@ -6,12 +6,13 @@ symbol, fetch 24h ticker data, retrieve candlestick data, and run a sample dice 
 
 ## Baseline tools
 
-| Tool name            | Description                                                            |
-| -------------------- | ---------------------------------------------------------------------- |
-| `search`             | Parses a symbol query (e.g. `BTCUSDT 1h`) and returns an ID for `fetch` |
-| `fetch`              | Returns Binance 24h ticker data for an ID produced by `search`          |
-| `get_binance_klines` | Retrieves recent candlestick data for a Binance spot symbol             |
-| `roll_dice`          | Demonstration tool from the MCP starter template                        |
+| Tool name                   | Description                                                            |
+| --------------------------- | ---------------------------------------------------------------------- |
+| `search`                    | Parses a symbol query (e.g. `BTCUSDT 1h`) and returns an ID for `fetch` |
+| `fetch`                     | Returns Binance 24h ticker data for an ID produced by `search`          |
+| `get_binance_klines`        | Retrieves recent candlestick data for a Binance spot symbol             |
+| `get_binance_perp_klines`   | Retrieves USDⓈ-M perpetual (futures) candlestick data                   |
+| `roll_dice`                 | Demonstration tool from the MCP starter template                        |
 
 > **Important:** ChatGPT validates the presence of `search` and `fetch`. Do not remove or rename
 > them; new tools should be added alongside these baseline ones.

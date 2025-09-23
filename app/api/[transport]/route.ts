@@ -18,6 +18,9 @@ const handler = createMcpHandler(
         get_binance_klines: {
           description: 'Fetches recent Binance spot market candlestick data',
         },
+        get_binance_perp_klines: {
+          description: 'Fetches Binance USDⓈ-M perpetual candlestick data',
+        },
         search: {
           description: 'Searches Binance symbols and returns IDs for fetch.',
         },

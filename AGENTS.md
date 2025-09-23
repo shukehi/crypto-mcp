@@ -9,11 +9,11 @@
 ## Build, Test, and Development Commands
 - `pnpm dev` — launches Next.js locally for manual testing (`http://localhost:3000`).
 - `pnpm build` — runs the production Next.js build; CI requires a clean run.
-- `pnpm verify:mcp` — builds, starts `next start` on a temp port, then calls `search → fetch → get_binance_klines`. Always run before pushing.
+- `pnpm verify:mcp` — builds, starts `next start` on a temp port, then calls `search → fetch → get_binance_klines → get_binance_perp_klines`. Always run before pushing.
 
 ## Coding Style & Naming Conventions
 - Use TypeScript with default Next.js configuration; keep imports path-based via the configured `@/` alias.
-- MCP tools must be named in `snake_case` (`search`, `fetch`, `get_binance_klines`, `roll_dice`). New tools must follow the same pattern.
+- MCP tools must be named in `snake_case` (`search`, `fetch`, `get_binance_klines`, `get_binance_perp_klines`, `roll_dice`). New tools must follow the same pattern.
 - Always return a plain-text summary in `content`; `structuredContent` is optional but encouraged for machine parsing.
 
 ## Testing Guidelines
