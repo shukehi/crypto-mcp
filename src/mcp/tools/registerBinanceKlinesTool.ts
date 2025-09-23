@@ -19,6 +19,8 @@ const binanceIntervals = [
   '1M',
 ] as const;
 
+type BinanceInterval = (typeof binanceIntervals)[number];
+
 type BinanceKline = [
   number,
   string,
@@ -46,6 +48,51 @@ const schema = {
 };
 
 const BINANCE_BASE_URL = process.env.BINANCE_API_BASE_URL ?? 'https://api.binance.com';
+
+const DEFAULT_INTERVAL: BinanceInterval = '1h';
+
+type SearchCacheEntry = {
+  id: string;
+  title: string;
+  description: string;
+  symbol: string;
+  interval: BinanceInterval;
+};
+
+const searchCache = new Map<string, SearchCacheEntry>();
+
+const searchToolSchema = {
+  query: z.string().min(1, 'Query is required').describe('The search query string.'),
+};
+
+const fetchToolSchema = {
+  id: z.string().min(1, 'Identifier is required').describe('Identifier returned by the search tool.'),
+};
+
+function makeResultId(symbol: string, interval: string) {
+  return `${symbol.toUpperCase()}_${interval}`;
+}
+
+function resolveInterval(input?: string): BinanceInterval {
+  if (!input) return DEFAULT_INTERVAL;
+  const normalized = input.trim();
+  const match = binanceIntervals.find((item) => item.toLowerCase() === normalized.toLowerCase());
+  return (match ?? DEFAULT_INTERVAL) as BinanceInterval;
+}
+
+function sanitizeSymbol(input: string) {
+  return input.replace(/[^A-Z0-9]/g, '').slice(0, 20);
+}
+
+function rememberResult(id: string, title: string, description: string, symbol: string, interval: BinanceInterval) {
+  searchCache.set(id, {
+    id,
+    title,
+    description,
+    symbol: sanitizeSymbol(symbol.toUpperCase().trim()),
+    interval,
+  });
+}
 
 export function registerBinanceKlinesTool(server: McpServer) {
   server.tool(
@@ -137,9 +184,19 @@ export function registerBinanceKlinesTool(server: McpServer) {
           recentPreview,
         ];
 
+        const resultId = makeResultId(symbol, interval);
+        rememberResult(
+          resultId,
+          `${symbol} (${interval})`,
+          '最新 K 线摘要，可配合 fetch 工具查看 24h 行情。',
+          symbol,
+          interval as BinanceInterval,
+        );
+
         return {
           content: [{ type: 'text', text: summaryLines.join('\n') }],
           structuredContent: {
+            id: resultId,
             symbol,
             interval,
             candles,
@@ -183,7 +240,122 @@ export function registerRollDiceTool(server: McpServer) {
   );
 }
 
+export function registerSearchTool(server: McpServer) {
+  server.tool(
+    'search',
+    'Searches Binance spot markets and returns IDs usable with fetch.',
+    searchToolSchema,
+    async ({ query }) => {
+      const tokens = query.trim().split(/\s+/);
+      const symbolCandidate = tokens[0]?.toUpperCase().replace(/[^A-Z0-9]/g, '') ?? '';
+      if (!symbolCandidate) {
+        return {
+          content: [{ type: 'text', text: '请输入有效的交易对，例如 "BTCUSDT" 或 "BTCUSDT 1h"。' }],
+          structuredContent: { results: [] },
+        };
+      }
+
+      const intervalCandidate = resolveInterval(tokens[1]);
+      const resultId = makeResultId(symbolCandidate, intervalCandidate);
+
+      const entry: SearchCacheEntry = {
+        id: resultId,
+        title: `${symbolCandidate} (${intervalCandidate})`,
+        description: '使用 fetch 工具获取 24h 行情或 get_binance_klines 查看 K 线。',
+        symbol: symbolCandidate,
+        interval: intervalCandidate,
+      };
+
+      rememberResult(entry.id, entry.title, entry.description, symbolCandidate, intervalCandidate);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `找到 1 个匹配项:\n1. ${entry.title} — ${entry.description}\n\n调用 fetch 工具并传入 ID ${entry.id} 获取行情摘要。`,
+          },
+        ],
+        structuredContent: {
+          results: [entry],
+        },
+      };
+    },
+  );
+}
+
+export function registerFetchTool(server: McpServer) {
+  server.tool(
+    'fetch',
+    'Fetches detailed Binance data for the provided ID returned by search.',
+    fetchToolSchema,
+    async ({ id }) => {
+      const entry = searchCache.get(id);
+      const [symbolPart, intervalPart] = id.split('_');
+      const symbol = sanitizeSymbol(entry?.symbol ?? symbolPart ?? '');
+      const interval = entry?.interval ?? resolveInterval(intervalPart);
+
+      if (!symbol) {
+        return {
+          content: [{ type: 'text', text: `无法解析 ID ${id}，请先通过 search 生成有效 ID。` }],
+          isError: true,
+        };
+      }
+
+      const params = new URLSearchParams({ symbol });
+
+      try {
+        const response = await fetch(
+          `${BINANCE_BASE_URL}/api/v3/ticker/24hr?${params.toString()}`,
+          { headers: { Accept: 'application/json' } },
+        );
+
+        if (!response.ok) {
+          const message = await response.text();
+          throw new Error(`Binance API error: ${response.status} ${message}`.trim());
+        }
+
+        const ticker = (await response.json()) as Record<string, string>;
+        const summaryLines = [
+          `交易对: ${symbol}`,
+          `周期: ${interval}`,
+          `最新价格: ${ticker.lastPrice ?? '未知'}`,
+          `24h 涨跌幅: ${ticker.priceChangePercent ?? '未知'} %`,
+          `高/低: ${ticker.highPrice ?? '未知'} / ${ticker.lowPrice ?? '未知'}`,
+          `成交量: ${ticker.volume ?? '未知'}`,
+        ];
+
+        if (!entry) {
+          rememberResult(id, `${symbol} (${interval})`, '通过 search 发现的交易对。', symbol, interval);
+        }
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: summaryLines.join('\n'),
+            },
+          ],
+          structuredContent: {
+            id,
+            symbol,
+            interval,
+            ticker,
+          },
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error fetching Binance ticker data';
+        return {
+          content: [{ type: 'text', text: `获取 Binance 行情失败: ${message}` }],
+          isError: true,
+        };
+      }
+    },
+  );
+}
+
 export function registerTools(server: McpServer) {
   registerRollDiceTool(server);
   registerBinanceKlinesTool(server);
+  registerSearchTool(server);
+  registerFetchTool(server);
 }
