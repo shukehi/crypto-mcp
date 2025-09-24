@@ -22,22 +22,57 @@ const BASE_URL = process.env.BASE_URL ||
   'http://localhost:8080';
 
 // Middleware
+const ALLOWED_ORIGINS = [
+  'https://chatgpt.com',
+  'https://chat.openai.com',
+  'https://platform.openai.com',
+  'http://localhost:3000'
+];
+
+const DEFAULT_ALLOWED_HEADERS = [
+  'Content-Type',
+  'Authorization',
+  'MCP-Protocol-Version',
+  'MCP-Client-ID',
+  'MCP-Connection-ID',
+  'MCP-Sequence-ID',
+  'MCP-Session-ID',
+  'MCP-Tenant-ID',
+  'OpenAI-Beta'
+];
+
+const ALLOWED_METHODS = ['GET', 'POST', 'OPTIONS'];
+
+app.use((req, res, next) => {
+  if (req.method !== 'OPTIONS') {
+    return next();
+  }
+
+  const origin = req.headers.origin;
+  if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
+    return res.sendStatus(403);
+  }
+
+  const requestHeaders = req.headers['access-control-request-headers'];
+
+  res.header('Access-Control-Allow-Origin', origin);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', ALLOWED_METHODS.join(','));
+  res.header(
+    'Access-Control-Allow-Headers',
+    requestHeaders || DEFAULT_ALLOWED_HEADERS.join(',')
+  );
+  res.header('Vary', 'Origin');
+  res.sendStatus(204);
+});
+
 app.use(cors({
-  origin: ['https://chatgpt.com', 'https://chat.openai.com', 'http://localhost:3000'],
+  origin: ALLOWED_ORIGINS,
   credentials: true,
   // Allow ChatGPT MCP browser clients to send their custom headers
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'MCP-Protocol-Version',
-    'MCP-Client-ID',
-    'MCP-Connection-ID',
-    'MCP-Sequence-ID',
-    'MCP-Session-ID',
-    'MCP-Tenant-ID',
-    'OpenAI-Beta'
-  ],
-  methods: ['GET', 'POST', 'OPTIONS']
+  allowedHeaders: DEFAULT_ALLOWED_HEADERS,
+  methods: ALLOWED_METHODS,
+  optionsSuccessStatus: 204
 }));
 
 app.use(express.json());
