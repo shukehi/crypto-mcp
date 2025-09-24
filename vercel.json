@@ -1,0 +1,10 @@
+{
+  "env": {
+    "CHATGPT_COMPATIBLE_MODE": "true"
+  },
+  "functions": {
+    "app/api/*/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}
