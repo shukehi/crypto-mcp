@@ -76,7 +76,7 @@ function rememberResult(id: string, title: string, description: string, symbol: 
 export function registerBinanceKlinesTool(server: McpServer) {
   server.tool(
     'get_binance_klines',
-    '获取币安现货市场的最新 K 线数据',
+    'Get market data',
     schema,
     async ({ symbol, interval, limit, startTime, endTime }) => {
       const params = new URLSearchParams({
@@ -106,7 +106,7 @@ export function registerBinanceKlinesTool(server: McpServer) {
             content: [
               {
                 type: 'text',
-                text: `Binance 未返回 ${symbol} (${interval}) 的任何 K 线数据。`,
+                text: `Binance returned no kline data for ${symbol} (${interval}).`,
               },
             ],
           };
@@ -127,7 +127,7 @@ export function registerBinanceKlinesTool(server: McpServer) {
             content: [
               {
                 type: 'text',
-                text: `Binance 未返回 ${symbol} (${interval}) 的任何 K 线数据。`,
+                text: `Binance returned no kline data for ${symbol} (${interval}).`,
               },
             ],
           };
@@ -151,13 +151,13 @@ export function registerBinanceKlinesTool(server: McpServer) {
           .join('\n');
 
         const summaryLines = [
-          `交易对: ${symbol}`,
-          `周期: ${interval}`,
-          `返回条目: ${candles.length} (limit=${limit ?? 50})`,
-          `时间范围: ${toIsoString(first.openTime)} → ${toIsoString(last.closeTime)}`,
-          `最新收盘价: ${last.close} (最高 ${last.high} / 最低 ${last.low})`,
+          `Symbol: ${symbol}`,
+          `Interval: ${interval}`,
+          `Returned entries: ${candles.length} (limit=${limit ?? 50})`,
+          `Time range: ${toIsoString(first.openTime)} → ${toIsoString(last.closeTime)}`,
+          `Latest close: ${last.close} (high ${last.high} / low ${last.low})`,
           '',
-          '最近 5 根 K 线:',
+          'Recent 5 candles:',
           recentPreview,
         ];
 
@@ -165,7 +165,7 @@ export function registerBinanceKlinesTool(server: McpServer) {
         rememberResult(
           resultId,
           `${symbol} (${interval})`,
-          '最新 K 线摘要，可配合 fetch 工具查看 24h 行情。',
+          'Latest kline summary, use with fetch tool for 24h ticker data.',
           symbol,
           interval as BinanceInterval,
         );
@@ -197,7 +197,7 @@ export function registerBinanceKlinesTool(server: McpServer) {
         const message =
           error instanceof Error ? error.message : 'Unknown error fetching Binance data';
         return {
-          content: [{ type: 'text', text: `获取 Binance K 线失败: ${message}` }],
+          content: [{ type: 'text', text: `Failed to fetch Binance data: ${message}` }],
           isError: true,
         };
       }
@@ -208,7 +208,7 @@ export function registerBinanceKlinesTool(server: McpServer) {
 export function registerRollDiceTool(server: McpServer) {
   server.tool(
     'roll_dice',
-    'Rolls an N-sided die',
+    'Rolls dice',
     { sides: z.number().int().min(2) },
     async ({ sides }) => {
       const value = 1 + Math.floor(Math.random() * sides);
@@ -220,14 +220,14 @@ export function registerRollDiceTool(server: McpServer) {
 export function registerSearchTool(server: McpServer) {
   server.tool(
     'search',
-    'Searches Binance spot markets and returns IDs usable with fetch.',
+    'Search crypto symbols',
     searchToolSchema,
     async ({ query }) => {
       const tokens = query.trim().split(/\s+/);
       const symbolCandidate = sanitizeSymbol(tokens[0] ?? '');
       if (!symbolCandidate) {
         return {
-          content: [{ type: 'text', text: '请输入有效的交易对，例如 "BTCUSDT" 或 "BTCUSDT 1h"。' }],
+          content: [{ type: 'text', text: 'Please enter a valid symbol, e.g. "BTCUSDT" or "BTCUSDT 1h".' }],
           structuredContent: { results: [] },
         };
       }
@@ -238,7 +238,7 @@ export function registerSearchTool(server: McpServer) {
       const entry: SearchCacheEntry = {
         id: resultId,
         title: `${symbolCandidate} (${intervalCandidate})`,
-        description: '使用 fetch 工具获取 24h 行情或 get_binance_klines 查看 K 线。',
+        description: `Use fetch tool to get 24h ticker data or get_binance_klines to view charts.`,
         symbol: symbolCandidate,
         interval: intervalCandidate,
       };
@@ -249,7 +249,7 @@ export function registerSearchTool(server: McpServer) {
         content: [
           {
             type: 'text',
-            text: `找到 1 个匹配项:\n1. ${entry.title} — ${entry.description}\n\n调用 fetch 工具并传入 ID ${entry.id} 获取行情摘要。`,
+            text: `Found 1 match:\n1. ${entry.title} — ${entry.description}\n\nCall fetch tool with ID ${entry.id} to get ticker summary.`,
           },
         ],
         structuredContent: {
@@ -263,7 +263,7 @@ export function registerSearchTool(server: McpServer) {
 export function registerFetchTool(server: McpServer) {
   server.tool(
     'fetch',
-    'Fetches detailed Binance data for the provided ID returned by search.',
+    'Fetch ticker data',
     fetchToolSchema,
     async ({ id }) => {
       const entry = searchCache.get(id);
@@ -273,7 +273,7 @@ export function registerFetchTool(server: McpServer) {
 
       if (!symbol) {
         return {
-          content: [{ type: 'text', text: `无法解析 ID ${id}，请先通过 search 生成有效 ID。` }],
+          content: [{ type: 'text', text: `Unable to parse ID ${id}, please generate a valid ID through search first.` }],
           isError: true,
         };
       }
@@ -293,16 +293,16 @@ export function registerFetchTool(server: McpServer) {
 
         const ticker = (await response.json()) as Record<string, string>;
         const summaryLines = [
-          `交易对: ${symbol}`,
-          `周期: ${interval}`,
-          `最新价格: ${ticker.lastPrice ?? '未知'}`,
-          `24h 涨跌幅: ${ticker.priceChangePercent ?? '未知'} %`,
-          `高/低: ${ticker.highPrice ?? '未知'} / ${ticker.lowPrice ?? '未知'}`,
-          `成交量: ${ticker.volume ?? '未知'}`,
+          `Symbol: ${symbol}`,
+          `Interval: ${interval}`,
+          `Latest Price: ${ticker.lastPrice ?? 'Unknown'}`,
+          `24h Change: ${ticker.priceChangePercent ?? 'Unknown'} %`,
+          `High/Low: ${ticker.highPrice ?? 'Unknown'} / ${ticker.lowPrice ?? 'Unknown'}`,
+          `Volume: ${ticker.volume ?? 'Unknown'}`,
         ];
 
         if (!entry) {
-          rememberResult(id, `${symbol} (${interval})`, '通过 search 发现的交易对。', symbol, interval);
+          rememberResult(id, `${symbol} (${interval})`, 'Symbol discovered through search.', symbol, interval);
         }
 
         return {
@@ -322,7 +322,7 @@ export function registerFetchTool(server: McpServer) {
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error fetching Binance ticker data';
         return {
-          content: [{ type: 'text', text: `获取 Binance 行情失败: ${message}` }],
+          content: [{ type: 'text', text: `Failed to fetch Binance ticker: ${message}` }],
           isError: true,
         };
       }

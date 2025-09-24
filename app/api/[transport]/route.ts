@@ -16,16 +16,16 @@ const handler = createMcpHandler(
     capabilities: {
       tools: {
         roll_dice: {
-          description: 'Rolls an N-sided die',
+          description: 'Rolls dice',
         },
         get_binance_klines: {
-          description: 'Fetches recent Binance spot market candlestick data',
+          description: 'Get market data',
         },
         search: {
-          description: 'Searches Binance symbols and returns IDs for fetch.',
+          description: 'Search crypto symbols',
         },
         fetch: {
-          description: 'Fetches 24h ticker data for a Binance symbol ID.',
+          description: 'Fetch ticker data',
         },
         ...(!chatgptCompatible
           ? {
@@ -108,6 +108,29 @@ const normalizeRequest = async (req: Request): Promise<Request> => {
   });
 };
 
-export const GET = async (req: Request) => handler(await normalizeRequest(req));
+export const GET = async (req: Request) => {
+  const url = new URL(req.url);
+
+  // Health check endpoint for ChatGPT compatibility
+  if (url.searchParams.has('health') || req.headers.get('user-agent')?.includes('ChatGPT')) {
+    return new Response(JSON.stringify({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      service: 'crypto-mcp',
+      version: '1.2.0',
+      tools: ['search', 'fetch', 'get_binance_klines', 'roll_dice'],
+      mcp: true
+    }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      }
+    });
+  }
+
+  // Default MCP handler
+  return handler(await normalizeRequest(req));
+};
 export const POST = async (req: Request) => handler(await normalizeRequest(req));
 export const DELETE = async (req: Request) => handler(await normalizeRequest(req));
