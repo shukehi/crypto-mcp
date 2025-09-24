@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
+    "build": "echo 'No build step required for this Express.js server'",
     "dev": "node --watch server.js",
     "start:oauth": "node server-oauth.js",
     "dev:oauth": "node --watch server-oauth.js"

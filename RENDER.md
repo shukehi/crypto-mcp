@@ -25,7 +25,7 @@
    - **mcp-demo-server**: Standard MCP server (auto-deploys)
    - **mcp-oauth-server**: OAuth MCP server (manual deploy)
 
-#### Option B: Manual Service Creation
+#### Option B: Manual Service Creation (If render.yaml fails)
 1. **Create Web Service**
    - Click "New" → "Web Service"
    - Connect your GitHub repository
@@ -122,6 +122,45 @@ To keep free services warm, you can:
 - **Pro**: $85/month per service
 
 Visit [render.com/pricing](https://render.com/pricing) for current rates.
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. "pnpm: command not found" or "frozen-lockfile" errors
+**Problem**: Render tries to use pnpm instead of npm
+**Solution**:
+- Use Option B (Manual Service Creation)
+- Ensure Build Command is set to: `npm ci --only=production`
+- Ensure Start Command is set to: `npm start`
+
+#### 2. "Missing script: build" error
+**Problem**: Render expects a build script
+**Solution**:
+- Project now includes a dummy `build` script
+- If still failing, use manual configuration (Option B)
+
+#### 3. Cold starts on free plan
+**Problem**: Service sleeps after 15 minutes
+**Solution**:
+- Upgrade to Starter plan ($7/month) for always-on service
+- Use external ping services to keep warm
+- Set up GitHub Actions ping workflow
+
+#### 4. Deploy button doesn't work
+**Problem**: Repository URL in deploy button is incorrect
+**Solution**:
+- Fork the repository to your GitHub account
+- Use manual deployment (Option B)
+- Update the deploy button URL to point to your fork
+
+### Getting Help
+
+If you're still experiencing issues:
+1. Check Render's deploy logs for specific error messages
+2. Verify all environment variables are set correctly
+3. Test your app locally with `npm start`
+4. Contact support with specific error details
 
 ## Support
 

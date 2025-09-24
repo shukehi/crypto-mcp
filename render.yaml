@@ -3,21 +3,26 @@ services:
     name: mcp-demo-server
     runtime: node
     plan: starter
-    buildCommand: npm install
+    region: oregon
+    buildCommand: npm ci --only=production
     startCommand: npm start
     healthCheckPath: /
+    numInstances: 1
     envVars:
       - key: NODE_ENV
         value: production
     autoDeploy: true
+    rootDir: ./
 
   - type: web
     name: mcp-oauth-server
     runtime: node
     plan: starter
-    buildCommand: npm install
+    region: oregon
+    buildCommand: npm ci --only=production
     startCommand: npm run start:oauth
     healthCheckPath: /
+    numInstances: 1
     envVars:
       - key: NODE_ENV
         value: production
@@ -30,3 +35,4 @@ services:
       - key: BASE_URL
         sync: false
     autoDeploy: false
+    rootDir: ./
