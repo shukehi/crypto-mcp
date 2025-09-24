@@ -11,72 +11,106 @@ const handler = createMcpHandler(
   {
     serverInfo: {
       name: 'crypto-mcp',
-      version: '1.2.0',
+      version: '1.2.1',
     },
     capabilities: {
-      tools: {
-        roll_dice: {
-          description: 'Rolls dice',
-        },
-        get_binance_klines: {
-          description: 'Get market data',
-        },
-        search: {
-          description: 'Search crypto symbols',
-        },
-        fetch: {
-          description: 'Fetch ticker data',
-        },
-        ...(!chatgptCompatible
-          ? {
-              get_binance_perp_klines: {
-                description: 'Fetches Binance USDⓈ-M perpetual candlestick data',
-              },
-            }
-          : {}),
-        ...(enableAdvanced
-          ? {
-              price_action_summary: {
-                description: 'Summarizes price action structure and S/R levels.',
-              },
-              get_risk_policy: {
-                description: 'Returns the current risk policy snapshot.',
-              },
-              set_risk_policy: {
-                description: 'Updates the risk policy (partial updates allowed).',
-              },
-              draft_order: {
-                description: 'Drafts an order and evaluates it against risk rules.',
-              },
-              request_confirmation: {
-                description: 'Creates a confirmation ticket for manual approval.',
-              },
-              get_confirmation: {
-                description: 'Retrieves a confirmation ticket by ID.',
-              },
-              list_confirmations: {
-                description: 'Lists pending confirmation tickets.',
-              },
-              schedule_task: {
-                description: 'Schedule an analysis or alert task (demo).',
-              },
-              list_jobs: {
-                description: 'List in-memory scheduled tasks.',
-              },
-              cancel_job: {
-                description: 'Cancel a scheduled task by ID.',
-              },
-            }
-          : {}),
-      },
+      tools: chatgptCompatible
+        ? {
+            search: {
+              description: 'Search crypto symbols',
+            },
+            fetch: {
+              description: 'Fetch ticker data',
+            },
+          }
+        : {
+            roll_dice: {
+              description: 'Rolls dice',
+            },
+            get_binance_klines: {
+              description: 'Get market data',
+            },
+            search: {
+              description: 'Search crypto symbols',
+            },
+            fetch: {
+              description: 'Fetch ticker data',
+            },
+            get_binance_perp_klines: {
+              description: 'Fetches Binance USDⓈ-M perpetual candlestick data',
+            },
+            ...(enableAdvanced
+              ? {
+                  price_action_summary: {
+                    description: 'Summarizes price action structure and S/R levels.',
+                  },
+                  get_risk_policy: {
+                    description: 'Returns the current risk policy snapshot.',
+                  },
+                  set_risk_policy: {
+                    description: 'Updates the risk policy (partial updates allowed).',
+                  },
+                  draft_order: {
+                    description: 'Drafts an order and evaluates it against risk rules.',
+                  },
+                  request_confirmation: {
+                    description: 'Creates a confirmation ticket for manual approval.',
+                  },
+                  get_confirmation: {
+                    description: 'Retrieves a confirmation ticket by ID.',
+                  },
+                  list_confirmations: {
+                    description: 'Lists pending confirmation tickets.',
+                  },
+                  schedule_task: {
+                    description: 'Schedule an analysis or alert task (demo).',
+                  },
+                  list_jobs: {
+                    description: 'List in-memory scheduled tasks.',
+                  },
+                  cancel_job: {
+                    description: 'Cancel a scheduled task by ID.',
+                  },
+                }
+              : {}),
+          },
+      logging: {},
     },
   },
   {
     basePath: '/api',
     verboseLogs: process.env.NODE_ENV !== 'production',
-    disableSse: true,
+    disableSse: false, // Enable SSE for better ChatGPT compatibility
   },
 );
+
+const validateAuth = (req: Request): boolean => {
+  // Skip auth for development/testing or if not ChatGPT compatible mode
+  if (!chatgptCompatible || process.env.VERCEL_ENV !== 'production') {
+    return true;
+  }
+
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return false;
+  }
+
+  const token = authHeader.substring(7);
+  global.accessTokens = global.accessTokens || new Map();
+  const tokenData = global.accessTokens.get(token);
+
+  if (!tokenData) {
+    return false;
+  }
+
+  // Check if token is expired (1 hour)
+  if (Date.now() - tokenData.timestamp > 60 * 60 * 1000) {
+    global.accessTokens.delete(token);
+    return false;
+  }
+
+  return true;
+};
 
 const normalizeRequest = async (req: Request): Promise<Request> => {
   const accept = req.headers.get('accept') ?? '';
@@ -117,20 +151,88 @@ export const GET = async (req: Request) => {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       service: 'crypto-mcp',
-      version: '1.2.0',
-      tools: ['search', 'fetch', 'get_binance_klines', 'roll_dice'],
+      version: '1.2.1',
+      tools: ['search', 'fetch'],
       mcp: true
     }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'no-cache',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization'
       }
     });
   }
 
-  // Default MCP handler
+  // MCP discovery endpoint - required for ChatGPT
+  if (url.pathname.endsWith('/.well-known/mcp')) {
+    return new Response(JSON.stringify({
+      mcp_version: '2025-06-18',
+      server_info: {
+        name: 'crypto-mcp',
+        version: '1.2.1'
+      },
+      capabilities: {
+        tools: chatgptCompatible ? {
+          search: { description: 'Search crypto symbols' },
+          fetch: { description: 'Fetch ticker data' }
+        } : {}
+      }
+    }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
+  }
+
+  // Default MCP handler for GET requests
+  try {
+    return handler(await normalizeRequest(req));
+  } catch (error) {
+    // Fallback for unsupported GET requests
+    return new Response(JSON.stringify({
+      error: 'Method not supported',
+      message: 'Use POST for MCP requests'
+    }), {
+      status: 405,
+      headers: {
+        'Content-Type': 'application/json',
+        'Allow': 'POST, OPTIONS'
+      }
+    });
+  }
+};
+export const POST = async (req: Request) => {
+  // Check authentication for ChatGPT compatible mode
+  if (chatgptCompatible && !validateAuth(req)) {
+    return new Response(JSON.stringify({
+      error: 'unauthorized',
+      message: 'Valid authorization required'
+    }), {
+      status: 401,
+      headers: {
+        'Content-Type': 'application/json',
+        'WWW-Authenticate': 'Bearer'
+      }
+    });
+  }
+
   return handler(await normalizeRequest(req));
 };
-export const POST = async (req: Request) => handler(await normalizeRequest(req));
 export const DELETE = async (req: Request) => handler(await normalizeRequest(req));
+
+export const OPTIONS = async () => {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization, User-Agent',
+      'Access-Control-Max-Age': '86400'
+    }
+  });
+};

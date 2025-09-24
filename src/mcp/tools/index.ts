@@ -13,15 +13,19 @@ import { registerConfirmationTool } from './registerConfirmationTool';
 import { registerSchedulerTools } from './registerSchedulerTools';
 
 export function registerTools(server: McpServer) {
+  // ChatGPT strict mode: only search and fetch tools
+  if (process.env.CHATGPT_COMPATIBLE_MODE === 'true') {
+    registerSearchTool(server);
+    registerFetchTool(server);
+    return;
+  }
+
+  // Full mode: all tools available
   registerRollDiceTool(server);
   registerBinanceKlinesTool(server);
   registerSearchTool(server);
   registerFetchTool(server);
-
-  // Extended tools (disabled in ChatGPT compatible mode)
-  if (process.env.CHATGPT_COMPATIBLE_MODE !== 'true') {
-    registerFuturesKlinesTool(server);
-  }
+  registerFuturesKlinesTool(server);
 
   // Advanced tools (only when explicitly enabled)
   if (process.env.ENABLE_ADVANCED_TOOLS === 'true') {
