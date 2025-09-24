@@ -2,6 +2,7 @@ import { createMcpHandler } from 'mcp-handler';
 import { registerTools } from '@/src/mcp/tools';
 
 const enableAdvanced = process.env.ENABLE_ADVANCED_TOOLS === 'true';
+const chatgptCompatible = process.env.CHATGPT_COMPATIBLE_MODE === 'true';
 
 const handler = createMcpHandler(
   async (server) => {
@@ -10,7 +11,7 @@ const handler = createMcpHandler(
   {
     serverInfo: {
       name: 'crypto-mcp',
-      version: '1.0.0',
+      version: '1.2.0',
     },
     capabilities: {
       tools: {
@@ -20,15 +21,19 @@ const handler = createMcpHandler(
         get_binance_klines: {
           description: 'Fetches recent Binance spot market candlestick data',
         },
-        get_binance_perp_klines: {
-          description: 'Fetches Binance USDⓈ-M perpetual candlestick data',
-        },
         search: {
           description: 'Searches Binance symbols and returns IDs for fetch.',
         },
         fetch: {
           description: 'Fetches 24h ticker data for a Binance symbol ID.',
         },
+        ...(!chatgptCompatible
+          ? {
+              get_binance_perp_klines: {
+                description: 'Fetches Binance USDⓈ-M perpetual candlestick data',
+              },
+            }
+          : {}),
         ...(enableAdvanced
           ? {
               price_action_summary: {

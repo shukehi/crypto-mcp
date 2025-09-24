@@ -4,19 +4,27 @@ A minimal Model Context Protocol (MCP) server deployed on Vercel for ChatGPT Dev
 baseline functionality (tag `v1.0.0`) exposes four core tools that allow ChatGPT to search for a
 symbol, fetch 24h ticker data, retrieve candlestick data, and run a sample dice roll.
 
-## Baseline tools
+## Tools
 
+### Core tools (always available)
 | Tool name                   | Description                                                            |
 | --------------------------- | ---------------------------------------------------------------------- |
 | `search`                    | Parses a symbol query (e.g. `BTCUSDT 1h`) and returns an ID for `fetch` |
 | `fetch`                     | Returns Binance 24h ticker data for an ID produced by `search`          |
 | `get_binance_klines`        | Retrieves recent candlestick data for a Binance spot symbol             |
-| `get_binance_perp_klines`   | Retrieves USDⓈ-M perpetual (futures) candlestick data                   |
 | `roll_dice`                | Demonstration tool from the MCP starter template                        |
 
-> Advanced tools (`price_action_summary`, risk policy/order drafting, confirmations, scheduler) are
-> gated behind the environment variable `ENABLE_ADVANCED_TOOLS=true`. They remain disabled on the
-> public deployment to maximize ChatGPT compatibility.
+### Extended tools (disabled in ChatGPT compatible mode)
+| Tool name                   | Description                                                            |
+| --------------------------- | ---------------------------------------------------------------------- |
+| `get_binance_perp_klines`   | Retrieves USDⓈ-M perpetual (futures) candlestick data                   |
+
+> **ChatGPT compatibility:** Set `CHATGPT_COMPATIBLE_MODE=true` to expose only the 4 core tools
+> that match the v1.0.0 baseline. This ensures compatibility with ChatGPT Developer Mode.
+
+> **Advanced tools:** Additional tools (`price_action_summary`, risk policy/order drafting,
+> confirmations, scheduler) are gated behind `ENABLE_ADVANCED_TOOLS=true` and remain disabled
+> on the public deployment.
 
 ### SSE endpoint
 
@@ -26,6 +34,13 @@ without requiring Redis. Streaming conversations are handled via the Streamable 
 
 > **Important:** ChatGPT validates the presence of `search` and `fetch`. Do not remove or rename
 > them; new tools should be added alongside these baseline ones.
+
+## Environment Configuration
+
+| Variable                    | Default | Description                                               |
+| --------------------------- | ------- | --------------------------------------------------------- |
+| `CHATGPT_COMPATIBLE_MODE`   | `false` | Enable ChatGPT compatibility (4 core tools only)         |
+| `ENABLE_ADVANCED_TOOLS`     | `false` | Enable advanced tools (risk policy, confirmations, etc.) |
 
 ## Requirements
 
@@ -64,14 +79,15 @@ baseline tools are missing or return an error.
 
 1. Push your changes to GitHub.
 2. Ensure the repository is linked to Vercel and that the build command is `pnpm install && pnpm build`.
-3. After deployment, verify the public endpoint:
+3. **For ChatGPT compatibility:** Set `CHATGPT_COMPATIBLE_MODE=true` in Vercel environment variables.
+4. After deployment, verify the public endpoint:
    ```bash
    curl -s https://<your-domain>/api/mcp \
      -H 'Content-Type: application/json' \
      -H 'Accept: application/json, text/event-stream' \
      -d '{"jsonrpc":"2.0","id":"1","method":"tools/list","params":{}}'
    ```
-4. Add the MCP server in ChatGPT Developer Mode by specifying the full URL `https://<your-domain>/api/mcp`.
+5. Add the MCP server in ChatGPT Developer Mode by specifying the full URL `https://<your-domain>/api/mcp`.
 
 ## Contributing
 

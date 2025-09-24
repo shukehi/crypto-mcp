@@ -15,9 +15,15 @@ import { registerSchedulerTools } from './registerSchedulerTools';
 export function registerTools(server: McpServer) {
   registerRollDiceTool(server);
   registerBinanceKlinesTool(server);
-  registerFuturesKlinesTool(server);
   registerSearchTool(server);
   registerFetchTool(server);
+
+  // Extended tools (disabled in ChatGPT compatible mode)
+  if (process.env.CHATGPT_COMPATIBLE_MODE !== 'true') {
+    registerFuturesKlinesTool(server);
+  }
+
+  // Advanced tools (only when explicitly enabled)
   if (process.env.ENABLE_ADVANCED_TOOLS === 'true') {
     registerPriceActionTool(server);
     registerRiskPolicyTools(server);

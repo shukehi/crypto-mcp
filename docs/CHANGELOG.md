@@ -1,10 +1,13 @@
 # Changelog
 
-## Unreleased
+## v1.2.0 – 2025-09-24 (ChatGPT Compatibility)
+- Added `CHATGPT_COMPATIBLE_MODE` flag to restore v1.0.0 tool compatibility (4 core tools only).
+- Extended tools (`get_binance_perp_klines`) are now conditionally exposed to maintain ChatGPT compatibility.
 - Added `ENABLE_ADVANCED_TOOLS` flag. Advanced tools (price action, risk policy, confirmations, scheduler)
   are disabled by default for maximum compatibility with ChatGPT Developer Mode.
 - Added `/api/sse` heartbeat endpoint so ChatGPT's SSE probe succeeds even when full SSE transport is disabled.
 - Normalized MCP request headers to accept missing `text/event-stream` entries.
+- Updated verification script to support compatibility mode testing.
 
 ## v1.1.0 – Stage 3 (Confirmations & Scheduling)
 - Added in-memory confirmation store with `request_confirmation`, `get_confirmation`, `list_confirmations`.

@@ -8,7 +8,11 @@
 const { spawn } = require('node:child_process');
 const { setTimeout: delay } = require('node:timers/promises');
 
-const REQUIRED_TOOLS = ['search', 'fetch', 'get_binance_klines', 'get_binance_perp_klines', 'roll_dice'];
+const CORE_TOOLS = ['search', 'fetch', 'get_binance_klines', 'roll_dice'];
+const EXTENDED_TOOLS = ['get_binance_perp_klines'];
+const REQUIRED_TOOLS = process.env.CHATGPT_COMPATIBLE_MODE === 'true'
+  ? CORE_TOOLS
+  : [...CORE_TOOLS, ...EXTENDED_TOOLS];
 const PORT = process.env.MCP_VERIFY_PORT || '4311';
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 
@@ -144,12 +148,16 @@ async function main() {
     if (klinesResponse.result?.isError) {
       throw new Error(`get_binance_klines reported error: ${JSON.stringify(klinesResponse.result)}`);
     }
-    const futuresResponse = await callMcp('tools/call', {
-      name: 'get_binance_perp_klines',
-      arguments: { symbol: 'BTCUSDT', interval: '1h', limit: 30 },
-    });
-    if (futuresResponse.result?.isError) {
-      throw new Error(`get_binance_perp_klines reported error: ${JSON.stringify(futuresResponse.result)}`);
+
+    // Test futures klines only in non-compatible mode
+    if (process.env.CHATGPT_COMPATIBLE_MODE !== 'true') {
+      const futuresResponse = await callMcp('tools/call', {
+        name: 'get_binance_perp_klines',
+        arguments: { symbol: 'BTCUSDT', interval: '1h', limit: 30 },
+      });
+      if (futuresResponse.result?.isError) {
+        throw new Error(`get_binance_perp_klines reported error: ${JSON.stringify(futuresResponse.result)}`);
+      }
     }
 
     const priceActionResponse = await callMcp('tools/call', {
