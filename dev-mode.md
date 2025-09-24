@@ -6,7 +6,7 @@
 3. [Requirements & Limitations](#requirements--limitations)
 4. [Option 1: Non-OAuth Implementation](#option-1-non-oauth-implementation)
 5. [Option 2: OAuth Implementation with Supabase](#option-2-oauth-implementation-with-supabase)
-6. [Deployment to Fly.io](#deployment-to-flyio)
+6. [Deployment Options](#deployment-options)
 7. [Common Gotchas & Solutions](#common-gotchas--solutions)
 8. [Testing Your MCP Server](#testing-your-mcp-server)
 9. [Troubleshooting](#troubleshooting)
@@ -1187,7 +1187,72 @@ app.listen(PORT, () => {
 }
 ```
 
-## Deployment to Fly.io
+## Deployment Options
+
+This MCP server can be deployed to multiple cloud platforms. Each platform has different features, pricing, and deployment approaches:
+
+### Platform Comparison
+
+| Platform | Free Tier | Always-On | Setup Complexity | Best For |
+|----------|-----------|-----------|------------------|----------|
+| **Railway** | No | Yes ($5/month) | Easy | Production, CI/CD |
+| **Render** | Yes* | Paid plans only | Easy | Testing, Development |
+| **Fly.io** | Yes | Paid scaling | Medium | Advanced users |
+
+*Render free tier has cold starts and limitations
+
+### Quick Deploy Links
+
+- [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/mcp-demo-server)
+- [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/your-username/crypto-mcp)
+
+### Deployment Guides
+
+#### Railway Deployment
+
+Railway offers the simplest deployment experience with excellent GitHub integration.
+
+**Quick Setup:**
+1. Connect your GitHub repository at [railway.app](https://railway.app)
+2. Railway auto-detects Node.js and uses `railway.json` configuration
+3. Deploys automatically on every push
+
+**Configuration:** See [RAILWAY.md](./RAILWAY.md) for detailed setup instructions.
+
+**Environment Variables (OAuth only):**
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+BASE_URL=https://your-app.railway.app
+```
+
+**Pricing:** $5/month per service (always-on, no cold starts)
+
+---
+
+#### Render Deployment
+
+Render provides a free tier option and excellent documentation.
+
+**Quick Setup:**
+1. Connect your GitHub repository at [render.com](https://render.com)
+2. Choose "Web Service" and configure:
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+3. Optional: Use `render.yaml` for advanced configuration
+
+**Configuration:** See [RENDER.md](./RENDER.md) for detailed setup instructions.
+
+**Free Tier Notes:**
+- Service sleeps after 15 minutes of inactivity
+- ~30 second cold start time
+- 750 hours/month limit
+- Upgrade to Starter ($7/month) for always-on service
+
+---
+
+#### Fly.io Deployment (Legacy)
 
 ### Prerequisites
 
