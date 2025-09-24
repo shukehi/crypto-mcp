@@ -3,6 +3,7 @@
 ## Unreleased
 - Added `ENABLE_ADVANCED_TOOLS` flag. Advanced tools (price action, risk policy, confirmations, scheduler)
   are disabled by default for maximum compatibility with ChatGPT Developer Mode.
+- Added `/api/sse` heartbeat endpoint so ChatGPT's SSE probe succeeds even when full SSE transport is disabled.
 - Normalized MCP request headers to accept missing `text/event-stream` entries.
 
 ## v1.1.0 – Stage 3 (Confirmations & Scheduling)

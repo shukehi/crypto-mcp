@@ -18,6 +18,12 @@ symbol, fetch 24h ticker data, retrieve candlestick data, and run a sample dice 
 > gated behind the environment variable `ENABLE_ADVANCED_TOOLS=true`. They remain disabled on the
 > public deployment to maximize ChatGPT compatibility.
 
+### SSE endpoint
+
+`/api/sse` returns a lightweight heartbeat stream so that ChatGPT can probe the SSE transport
+without requiring Redis. Streaming conversations are handled via the Streamable HTTP endpoint
+(`/api/mcp`).
+
 > **Important:** ChatGPT validates the presence of `search` and `fetch`. Do not remove or rename
 > them; new tools should be added alongside these baseline ones.
 
