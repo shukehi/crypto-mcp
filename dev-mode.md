@@ -306,6 +306,34 @@ app.post('/', (req, res) => {
                 required: ['expression'],
                 additionalProperties: false
               }
+            },
+            {
+              name: 'binance_klines',
+              title: 'Binance K-Line Data',
+              description: 'Fetch candlestick data from Binance',
+              inputSchema: {
+                type: 'object',
+                properties: {
+                  symbol: {
+                    type: 'string',
+                    description: 'Trading pair symbol, e.g., BTCUSDT'
+                  },
+                  interval: {
+                    type: 'string',
+                    description: 'Binance K-line interval',
+                    default: '1h'
+                  },
+                  limit: {
+                    type: 'integer',
+                    minimum: 1,
+                    maximum: 1000,
+                    description: 'Number of candles to fetch (max 1000)',
+                    default: 100
+                  }
+                },
+                required: ['symbol'],
+                additionalProperties: false
+              }
             }
           ]
         }
@@ -355,6 +383,76 @@ app.post('/', (req, res) => {
               type: 'text',
               text: `Error: Invalid expression`
             }];
+          }
+          break;
+
+        case 'binance_klines':
+          {
+            const symbol = String(args.symbol || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+            const interval = String(args.interval || '1h');
+            const limit = Math.min(Math.max(parseInt(args.limit ?? 100, 10) || 100, 1), 1000);
+
+            const allowedIntervals = new Set([
+              '1m','3m','5m','15m','30m',
+              '1h','2h','4h','6h','8h','12h',
+              '1d','3d','1w','1M'
+            ]);
+
+            if (!symbol) {
+              content = [{ type: 'text', text: 'Error: symbol is required' }];
+              break;
+            }
+
+            if (!allowedIntervals.has(interval)) {
+              content = [{ type: 'text', text: `Error: interval must be one of ${Array.from(allowedIntervals).join(', ')}` }];
+              break;
+            }
+
+            try {
+              const url = new URL('https://api.binance.com/api/v3/klines');
+              url.searchParams.set('symbol', symbol);
+              url.searchParams.set('interval', interval);
+              url.searchParams.set('limit', String(limit));
+
+              const response = await fetch(url, {
+                headers: {
+                  'Accept': 'application/json',
+                  'User-Agent': 'crypto-mcp-demo'
+                }
+              });
+
+              if (!response.ok) {
+                content = [{
+                  type: 'text',
+                  text: `Error: Binance API responded with ${response.status}`
+                }];
+                break;
+              }
+
+              const data = await response.json();
+              content = [{
+                type: 'text',
+                text: JSON.stringify({
+                  symbol,
+                  interval,
+                  limit,
+                  candles: data.map(([openTime, open, high, low, close, volume, closeTime]) => ({
+                    openTime,
+                    open,
+                    high,
+                    low,
+                    close,
+                    volume,
+                    closeTime
+                  }))
+                })
+              }];
+            } catch (error) {
+              content = [{
+                type: 'text',
+                text: `Error: Failed to fetch Binance data (${error.message})`
+              }];
+            }
           }
           break;
           
@@ -1508,6 +1606,7 @@ After connecting, try these prompts in ChatGPT:
 - "Fetch data with ID 123"
 - "Analyze this text for sentiment"
 - "Generate a JSON schema"
+- "获取 BTCUSDT 1 小时 K 线数据"
 
 ## Common Gotchas & Solutions
 
