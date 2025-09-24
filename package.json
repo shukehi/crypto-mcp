@@ -9,6 +9,10 @@
     "start:oauth": "node server-oauth.js",
     "dev:oauth": "node --watch server-oauth.js"
   },
+  "engines": {
+    "node": "20.16.0",
+    "pnpm": ">=9.0.0"
+  },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",

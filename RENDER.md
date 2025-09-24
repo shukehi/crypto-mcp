@@ -26,8 +26,8 @@ This is the most reliable deployment method with explicit configuration.
    ```
    Name: mcp-demo-server
    Runtime: Node
-   Build Command: npm ci
-   Start Command: npm start
+   Build Command: pnpm install --frozen-lockfile
+   Start Command: pnpm start
    Node Version: 20.16.0 (in Advanced settings)
    ```
 
@@ -41,8 +41,8 @@ This is the most reliable deployment method with explicit configuration.
    ```
    Name: mcp-oauth-server
    Runtime: Node
-   Build Command: npm ci
-   Start Command: npm run start:oauth
+   Build Command: pnpm install --frozen-lockfile
+   Start Command: pnpm run start:oauth
    Node Version: 20.16.0 (in Advanced settings)
    ```
 
@@ -161,21 +161,21 @@ Visit [render.com/pricing](https://render.com/pricing) for current rates.
 
 ### Common Issues
 
-#### 1. "pnpm: command not found" or "frozen-lockfile" errors
-**Problem**: Render automatically uses pnpm commands instead of npm
+#### 1. "pnpm: lockfile not found" or dependency errors
+**Problem**: pnpm lockfile missing or outdated
 **Solution**:
-- Use Option A (Manual Service Creation) - this is now the recommended approach
-- Ensure Build Command is set to: `npm ci` (no --only=production flag)
-- Ensure Start Command is set to: `npm start`
+- Ensure `pnpm-lock.yaml` exists in your repository
+- Use Build Command: `pnpm install --frozen-lockfile`
+- Use Start Command: `pnpm start`
 - Set Node Version to: `20.16.0` in Advanced settings
 
 #### 2. "Cannot find package 'express'" or module not found errors
 **Problem**: Dependencies not properly installed during build
 **Solution**:
-- This usually happens when `--only=production` flag excludes required dependencies
-- Use manual configuration (Option A) with `npm ci` (without --only=production)
+- This usually happens when pnpm lockfile is missing or corrupted
+- Use manual configuration (Option A) with `pnpm install --frozen-lockfile`
 - Ensure Node Version is set to `20.16.0`
-- Check that package-lock.json exists in your repository
+- Check that pnpm-lock.yaml exists in your repository
 
 #### 3. "Missing script: build" error
 **Problem**: Render expects a build script
@@ -202,7 +202,7 @@ Visit [render.com/pricing](https://render.com/pricing) for current rates.
 If you're still experiencing issues:
 1. Check Render's deploy logs for specific error messages
 2. Verify all environment variables are set correctly
-3. Test your app locally with `npm start`
+3. Test your app locally with `pnpm start`
 4. Contact support with specific error details
 
 ## Support

@@ -3,12 +3,8 @@ services:
     name: mcp-demo-server
     runtime: node
     plan: starter
-    region: oregon
-    buildCommand: npm ci
-    startCommand: npm start
+    startCommand: pnpm start
     healthCheckPath: /
-    numInstances: 1
-    nodeVersion: 20.16.0
     envVars:
       - key: NODE_ENV
         value: production
@@ -18,12 +14,8 @@ services:
     name: mcp-oauth-server
     runtime: node
     plan: starter
-    region: oregon
-    buildCommand: npm ci
-    startCommand: npm run start:oauth
+    startCommand: pnpm run start:oauth
     healthCheckPath: /
-    numInstances: 1
-    nodeVersion: 20.16.0
     envVars:
       - key: NODE_ENV
         value: production
