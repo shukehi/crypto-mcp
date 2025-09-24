@@ -182,7 +182,17 @@ const SERVER_VERSION = "1.0.0";
 app.use(cors({
   origin: ['https://chatgpt.com', 'https://chat.openai.com'],
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'MCP-Protocol-Version'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'MCP-Protocol-Version',
+    'MCP-Client-ID',
+    'MCP-Connection-ID',
+    'MCP-Sequence-ID',
+    'MCP-Session-ID',
+    'MCP-Tenant-ID',
+    'OpenAI-Beta'
+  ],
   methods: ['GET', 'POST', 'OPTIONS']
 }));
 
@@ -415,7 +425,17 @@ const BASE_URL = process.env.BASE_URL ||
 app.use(cors({
   origin: ['https://chatgpt.com', 'https://chat.openai.com', 'http://localhost:3000'],
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'MCP-Protocol-Version'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'MCP-Protocol-Version',
+    'MCP-Client-ID',
+    'MCP-Connection-ID',
+    'MCP-Sequence-ID',
+    'MCP-Session-ID',
+    'MCP-Tenant-ID',
+    'OpenAI-Beta'
+  ],
   methods: ['GET', 'POST', 'OPTIONS']
 }));
 
@@ -1482,7 +1502,18 @@ redirect_uris: [
 app.use(cors({
   origin: ['https://chatgpt.com', 'https://chat.openai.com'],
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'MCP-Protocol-Version']
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'MCP-Protocol-Version',
+    'MCP-Client-ID',
+    'MCP-Connection-ID',
+    'MCP-Sequence-ID',
+    'MCP-Session-ID',
+    'MCP-Tenant-ID',
+    'OpenAI-Beta'
+  ],
+  methods: ['GET', 'POST', 'OPTIONS']
 }));
 ```
 
