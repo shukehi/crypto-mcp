@@ -85,8 +85,14 @@ const handler = createMcpHandler(
 );
 
 const validateAuth = (req: Request): boolean => {
-  // Skip auth for development/testing or if not ChatGPT compatible mode
-  if (!chatgptCompatible || process.env.VERCEL_ENV !== 'production') {
+  // Temporarily disable auth for ChatGPT compatibility
+  // ChatGPT doesn't support OAuth flow for MCP connectors yet
+  if (chatgptCompatible) {
+    return true;
+  }
+
+  // Skip auth for development/testing
+  if (process.env.VERCEL_ENV !== 'production') {
     return true;
   }
 
@@ -189,39 +195,72 @@ export const GET = async (req: Request) => {
     });
   }
 
-  // Default MCP handler for GET requests
-  try {
-    return handler(await normalizeRequest(req));
-  } catch (error) {
-    // Fallback for unsupported GET requests
-    return new Response(JSON.stringify({
-      error: 'Method not supported',
-      message: 'Use POST for MCP requests'
-    }), {
-      status: 405,
-      headers: {
-        'Content-Type': 'application/json',
-        'Allow': 'POST, OPTIONS'
+  // For direct access to /api/mcp, return server info
+  return new Response(JSON.stringify({
+    message: 'MCP Server Ready',
+    name: 'crypto-mcp',
+    version: '1.2.1',
+    mode: chatgptCompatible ? 'ChatGPT Compatible' : 'Full Mode',
+    tools: chatgptCompatible ? ['search', 'fetch'] : ['roll_dice', 'get_binance_klines', 'search', 'fetch', 'get_binance_perp_klines'],
+    endpoints: {
+      mcp: 'POST /api/mcp',
+      health: 'GET /api/mcp?health',
+      oauth: {
+        authorize: '/api/oauth/authorize',
+        token: '/api/oauth/token',
+        discovery: '/.well-known/oauth-authorization-server'
       }
-    });
-  }
+    }
+  }), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
 };
 export const POST = async (req: Request) => {
-  // Check authentication for ChatGPT compatible mode
-  if (chatgptCompatible && !validateAuth(req)) {
+  try {
+    // Check authentication for ChatGPT compatible mode
+    if (chatgptCompatible && !validateAuth(req)) {
+      return new Response(JSON.stringify({
+        jsonrpc: '2.0',
+        id: null,
+        error: {
+          code: -32600,
+          message: 'Unauthorized access'
+        }
+      }), {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+
+    return handler(await normalizeRequest(req));
+  } catch (error) {
+    // Enhanced error handling for better debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('MCP POST error:', error);
+
     return new Response(JSON.stringify({
-      error: 'unauthorized',
-      message: 'Valid authorization required'
+      jsonrpc: '2.0',
+      id: null,
+      error: {
+        code: -32603,
+        message: 'Internal server error',
+        data: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      }
     }), {
-      status: 401,
+      status: 500,
       headers: {
         'Content-Type': 'application/json',
-        'WWW-Authenticate': 'Bearer'
+        'Access-Control-Allow-Origin': '*'
       }
     });
   }
-
-  return handler(await normalizeRequest(req));
 };
 export const DELETE = async (req: Request) => handler(await normalizeRequest(req));
 

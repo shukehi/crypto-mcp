@@ -1,5 +1,7 @@
 export async function GET() {
-  const baseUrl = process.env.VERCEL_URL
+  const baseUrl = process.env.VERCEL_ENV === 'production'
+    ? 'https://crypto-mcp-two.vercel.app'
+    : process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : 'https://crypto-mcp-two.vercel.app';
 
