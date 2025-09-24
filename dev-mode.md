@@ -233,7 +233,7 @@ app.use(cors({
 app.use(express.json());
 
 // MCP Protocol Handler
-app.post('/', (req, res) => {
+app.post('/', async (req, res) => {
   const { jsonrpc, method, params = {}, id } = req.body;
   
   switch (method) {
@@ -1113,7 +1113,7 @@ function validateToken(authHeader) {
 }
 
 // MCP Protocol Handler (MUST be at root path)
-app.post('/', (req, res) => {
+app.post('/', async (req, res) => {
   const { jsonrpc, method, params = {}, id } = req.body;
   
   // Check authentication for protected methods
