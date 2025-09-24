@@ -739,6 +739,28 @@ app.post('/', (req, res) => {
       });
       break;
 
+    case 'prompts/list':
+      res.json({
+        jsonrpc: '2.0',
+        id,
+        result: {
+          prompts: [
+            {
+              name: 'analyze_code',
+              description: 'Analyze code quality',
+              arguments: [
+                {
+                  name: 'code',
+                  description: 'Code to analyze',
+                  required: true
+                }
+              ]
+            }
+          ]
+        }
+      });
+      break;
+
     default:
       res.json({
         jsonrpc: '2.0',
