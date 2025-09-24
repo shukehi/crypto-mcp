@@ -12,7 +12,52 @@
 
 ### 2. Deploy from GitHub
 
-#### Option A: Using render.yaml (Recommended)
+#### Option A: Manual Service Creation (Recommended)
+This is the most reliable deployment method with explicit configuration.
+
+1. **Connect Repository**
+   - Fork this repository to your GitHub account
+   - Visit [render.com](https://render.com) and sign in
+   - Click "New" → "Web Service"
+   - Connect your GitHub repository
+
+2. **Configure Standard MCP Server**
+   Use these exact settings:
+   ```
+   Name: mcp-demo-server
+   Runtime: Node
+   Build Command: npm ci
+   Start Command: npm start
+   Node Version: 20.16.0 (in Advanced settings)
+   ```
+
+3. **Environment Variables** (if needed)
+   ```
+   NODE_ENV=production
+   ```
+
+4. **For OAuth MCP Server** (separate service)
+   Create another Web Service with:
+   ```
+   Name: mcp-oauth-server
+   Runtime: Node
+   Build Command: npm ci
+   Start Command: npm run start:oauth
+   Node Version: 20.16.0 (in Advanced settings)
+   ```
+
+   **Required Environment Variables**:
+   ```
+   NODE_ENV=production
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=your-anon-key
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   BASE_URL=https://your-app.onrender.com
+   ```
+
+#### Option B: Using render.yaml Blueprint (Alternative)
+If Option A doesn't work, try the Blueprint approach:
+
 1. **Fork and Connect Repository**
    - Fork this repository to your GitHub account
    - Visit [render.com](https://render.com) and sign in
@@ -20,21 +65,10 @@
    - Connect your GitHub repository
    - Render will automatically detect the `render.yaml` configuration
 
-2. **Configure Services**
-   The `render.yaml` defines two services:
-   - **mcp-demo-server**: Standard MCP server (auto-deploys)
-   - **mcp-oauth-server**: OAuth MCP server (manual deploy)
-
-#### Option B: Manual Service Creation (If render.yaml fails)
-1. **Create Web Service**
-   - Click "New" → "Web Service"
-   - Connect your GitHub repository
-   - Configure settings:
-     - **Name**: `mcp-demo-server`
-     - **Runtime**: Node
-     - **Build Command**: `npm install`
-     - **Start Command**: `npm start`
-     - **Plan**: Starter ($7/month)
+2. **Important Notes**:
+   - Blueprint may have configuration conflicts
+   - If deployment fails, use Option A (Manual) instead
+   - Check logs for specific error messages
 
 ### 3. Environment Variables
 
@@ -128,30 +162,39 @@ Visit [render.com/pricing](https://render.com/pricing) for current rates.
 ### Common Issues
 
 #### 1. "pnpm: command not found" or "frozen-lockfile" errors
-**Problem**: Render tries to use pnpm instead of npm
+**Problem**: Render automatically uses pnpm commands instead of npm
 **Solution**:
-- Use Option B (Manual Service Creation)
-- Ensure Build Command is set to: `npm ci --only=production`
+- Use Option A (Manual Service Creation) - this is now the recommended approach
+- Ensure Build Command is set to: `npm ci` (no --only=production flag)
 - Ensure Start Command is set to: `npm start`
+- Set Node Version to: `20.16.0` in Advanced settings
 
-#### 2. "Missing script: build" error
+#### 2. "Cannot find package 'express'" or module not found errors
+**Problem**: Dependencies not properly installed during build
+**Solution**:
+- This usually happens when `--only=production` flag excludes required dependencies
+- Use manual configuration (Option A) with `npm ci` (without --only=production)
+- Ensure Node Version is set to `20.16.0`
+- Check that package-lock.json exists in your repository
+
+#### 3. "Missing script: build" error
 **Problem**: Render expects a build script
 **Solution**:
 - Project now includes a dummy `build` script
-- If still failing, use manual configuration (Option B)
+- If still failing, use manual configuration (Option A)
 
-#### 3. Cold starts on free plan
+#### 4. Cold starts on free plan
 **Problem**: Service sleeps after 15 minutes
 **Solution**:
 - Upgrade to Starter plan ($7/month) for always-on service
 - Use external ping services to keep warm
 - Set up GitHub Actions ping workflow
 
-#### 4. Deploy button doesn't work
+#### 5. Deploy button doesn't work
 **Problem**: Repository URL in deploy button is incorrect
 **Solution**:
 - Fork the repository to your GitHub account
-- Use manual deployment (Option B)
+- Use manual deployment (Option A)
 - Update the deploy button URL to point to your fork
 
 ### Getting Help

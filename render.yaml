@@ -4,25 +4,26 @@ services:
     runtime: node
     plan: starter
     region: oregon
-    buildCommand: npm ci --only=production
+    buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /
     numInstances: 1
+    nodeVersion: 20.16.0
     envVars:
       - key: NODE_ENV
         value: production
     autoDeploy: true
-    rootDir: ./
 
   - type: web
     name: mcp-oauth-server
     runtime: node
     plan: starter
     region: oregon
-    buildCommand: npm ci --only=production
+    buildCommand: npm ci
     startCommand: npm run start:oauth
     healthCheckPath: /
     numInstances: 1
+    nodeVersion: 20.16.0
     envVars:
       - key: NODE_ENV
         value: production
@@ -35,4 +36,3 @@ services:
       - key: BASE_URL
         sync: false
     autoDeploy: false
-    rootDir: ./
